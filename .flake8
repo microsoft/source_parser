@@ -1,0 +1,4 @@
+[flake8]
+max_line_length=150
+exclude=tools,evaluations
+ignore=E501,W503

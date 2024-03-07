@@ -1,0 +1,8 @@
+[MAIN]
+max-line-length=150
+max-args=10
+max-locals=30
+max-branches=24
+max-statements=100
+ignore=test/assets
+disable=missing-docstring,broad-exception-caught,too-few-public-methods,protected-access,anomalous-backslash-in-string
