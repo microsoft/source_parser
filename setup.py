@@ -5,11 +5,9 @@
 
 See:
 https://packaging.python.org/guides/distributing-packages-using-setuptools/
-https://github.com/pypa/sampleproject
 """
 from io import open
 from os import path
-import re
 from setuptools import setup, find_packages
 
 HERE = path.abspath(path.dirname(__file__))
@@ -21,15 +19,9 @@ with open(path.join(HERE, "README.md"), encoding="utf-8") as f:
 VERSIONFILE = path.join(HERE, "source_parser", "_version.py")
 with open(VERSIONFILE, "rt", encoding="utf-8") as f:
     version = f.read()
-    V_MATCH = re.match(
-        r"^__version__ = ['\"]([^'\"]*)['\"]",
-        version
-    )
-if V_MATCH:
-    VERSTR = V_MATCH.group(1)
-else:
-    raise RuntimeError(f"Unable to find version string in {VERSIONFILE}")
-
+    main_ns = {}
+    exec(version, main_ns)
+    VERSTR = main_ns['__version__']
 
 setup(
     name="source_parser",  # Required
@@ -54,11 +46,11 @@ setup(
     packages=find_packages(exclude=["contrib", "test"]),  # Required
     python_requires=">=3.6, <4",
     include_package_data=True,
-
     install_requires=[
         "autopep8>=1.4.4",
         "lz4>=3.1.0",
         "networkx>=2.5.1",
-        "datasketch>=1.5.3"
+        "datasketch>=1.5.3",
+        "tree-sitter>=0.20.1"
     ],
 )

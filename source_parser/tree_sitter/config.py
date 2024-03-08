@@ -32,7 +32,7 @@ from shlex import split
 from typing import Union
 from tree_sitter import Language
 
-DATADIR = Path(__file__).parent / "tree_sitter/assets"
+DATADIR = Path(__file__).parent / "assets"
 LANGS = ["-".join(repo.name.split("-")[2:]) for repo in DATADIR.iterdir()]
 LANGDIR = Path.home() / ".cache" / "source_parser"
 RE_TSLANG = re.compile(r"^extern const TSLanguage \*(\w+)\(void\).*")
