@@ -1,2 +1,3 @@
 graft source_parser
 global-exclude *.py[cod] __pycache__ *.so
+exclude source_parser/tree_sitter/assets/*
