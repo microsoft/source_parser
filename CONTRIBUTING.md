@@ -5,12 +5,29 @@
 
 To contribute, branch source-parser and file a [pull request](https://github.com/microsoft/source_parser/pulls).
 
-### When submitting a PR you must take care to do two things
-  1. Excecute `pytest test/` in the root directory and ensure
+### Develop, Build, Deploy and Test locally
+  - Clone source:
+
+      ```bash
+      git clone https://github.com/microsoft/source_parser
+      ```
+
+      If you have already cloned the repo non-recursively, you can obtain the `treesitter` submodules by invoking
+
+      ```bash
+      git submodule update --init --recursive
+      ```
+  - Build and deploy with following commands:
+      ```bash
+            pip uninstall source_parser
+            python setup.py sdist
+            pip install dist/source_parser-<version>.tar.gz
+      ```
+  - Excecute `pytest test/` in the root directory and ensure
      all the tests pass
-  2. Bump the version number in the `source_parser/_version.py` file
+  - Bump the version number in the `source_parser/_version.py` file
      following semantic versioning
-  3. If you modify the schema, try to modify it in a way which does not
+  - If you modify the schema, try to modify it in a way which does not
      break backwards compatibility and be sure to update the README.md
      description of the schema.
 
@@ -35,7 +52,7 @@ flake8 ./
 
 ## Reporting Issues
 
-If you encounter any issues, please open an [issue](https://github.com/microsoft/Tokenizer/issues).
+If you encounter any issues, please open an [issue](https://github.com/microsoft/source_parser/issues).
 
 ## Contributor License Agreement
 
