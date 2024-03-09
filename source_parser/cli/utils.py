@@ -40,11 +40,11 @@ def save_logging_in_file(logger, logfile=None, processed_dir=None, level=logging
     """ Setup logger to save to logfile as well """
     now = datetime.now()
     today = str(now).split()[0]
-    time = "{:0>2}{:0>2}".format(now.hour, now.minute)
+    time = f"{now.hour:0>2}{now.minute:0>2}"
 
     processed_dir = Path(processed_dir)
     if not logfile:
-        logfile = processed_dir / "{}-{}-{}.log".format(today, time, "crawlthecrawler")
+        logfile = processed_dir / f"{today}-{time}-crawlthecrawler.log"
     handler = logging.FileHandler(logfile)
     handler.setLevel(level)
     logger.addHandler(handler)
@@ -74,7 +74,8 @@ def load_file(file_path):
     """ Load file with fallback encodings, log warning if it fails """
     for open_kwargs in OPEN_ENCODING_KWARGS:
         try:
-            file_contents = open(file_path, "r", **open_kwargs).read()
+            with open(file_path, "r", **open_kwargs) as file:
+                file_contents = file.read()
         except (UnicodeDecodeError, UnicodeError) as _:
             continue
         # return first successful decoding
@@ -91,15 +92,15 @@ def decode(bytestring):
         except (UnicodeDecodeError, UnicodeError) as _:
             continue
         return strng.replace(chr(0), "")  # discard null bytes
-    raise UnicodeError(f"Failed to decode bytes")
+    raise UnicodeError("Failed to decode bytes")
 
 
 def quiet_call(cmd, **kwargs):
     """ execute cmd in a subprocess and hide stdout and stderr """
     return subprocess.call(
         shlex.split(cmd),
-        stdout=open(os.devnull, "w"),
-        stderr=open(os.devnull, "w"),
+        stdout=open(os.devnull, "w", encoding="utf-8"),
+        stderr=open(os.devnull, "w", encoding="utf-8"),
         **kwargs,
     )  # call and suppress output
 
@@ -108,9 +109,9 @@ def get_head_commit_hash(repo_directory):
     try:
         return (
             subprocess.check_output(
-                shlex.split(f"git rev-parse HEAD"),
+                shlex.split("git rev-parse HEAD"),
                 cwd=repo_directory,
-                stderr=open(os.devnull, "w"),
+                stderr=open(os.devnull, "w", encoding="utf-8"),
             )
             .decode("utf-8")
             .strip()
@@ -124,7 +125,6 @@ def get_repo_data(
     include: Union[Tuple, str],
     exclude: Union[Tuple, str] = (),
     branch=None,
-    depth=1,
     commit=None,
     tmpdir_path=None,
     timeout=20,
@@ -202,7 +202,6 @@ def get_repo_data(
             results["_msg"] = 128  # register as clone failed
             return results
 
-        len_tmpdir = len(str(tmpdir))
         for label, pathlist in walk(working_dir, include, exclude).items():
             for path in pathlist:
                 path = str(path)
@@ -316,9 +315,26 @@ def clone_repository(
 
 
 def _path_match_any(path, patterns):
-    if isinstance(patterns, str):
-        return _path_match_any(path, (patterns,))
-    return any(map(lambda p: path.match(p), patterns))
+    """
+    Check if the given path matches any of the provided patterns.
+
+    Parameters
+    ----------
+    path: str/Path
+        The path to be checked.
+    patterns: str/Tuple[str]
+        One or more unix-like globs to match files.
+
+    Returns
+    -------
+    bool
+        True if the path matches any of the patterns, False otherwise.
+    """
+    # If patterns is a string, convert it to a tuple
+    patterns = (patterns,) if isinstance(patterns, str) else patterns
+
+    # Check if path matches any of the patterns
+    return any(path.match(pattern) for pattern in patterns)
 
 
 def walk(directory, include: Union[Tuple, str], exclude: Union[Tuple, str] = ()):
@@ -349,7 +365,7 @@ def walk(directory, include: Union[Tuple, str], exclude: Union[Tuple, str] = ())
         path = queue.pop()
         if _path_match_any(path, exclude):
             continue
-        elif path.is_dir() and not path.is_symlink():
+        if path.is_dir() and not path.is_symlink():
             queue.extend(path.iterdir())
         elif _path_match_any(path, include):
             if path.exists() and not path.is_dir():

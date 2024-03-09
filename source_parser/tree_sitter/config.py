@@ -22,13 +22,13 @@ usage:
 >>> print(f'Currently supported langs: {list(LanguageId)}')
 >>> py_lang = get_language('python')
 """
-
+# pylint: disable=logging-fstring-interpolation
 import logging
 import re
 from enum import Enum
 from pathlib import Path
 from shutil import rmtree
-from shlex import split
+from threading import Lock
 from typing import Union
 from tree_sitter import Language
 
@@ -66,6 +66,9 @@ PARSER_SYMBOL_NAMES = (
 
 LOGGER = logging.getLogger(__name__)
 
+# Create a lock instance
+build_library_lock = Lock()
+
 
 def build_library(language: LanguageId, force_build=False):
     """
@@ -94,8 +97,10 @@ def build_library(language: LanguageId, force_build=False):
 
     if src_dir:
         if not langlib.exists() or force_build:
-            Language.build_library(str(langlib), [src_dir])
-            LOGGER.info(f"Saved language shared object {langlib}")
+            with build_library_lock:
+                LOGGER.info(f"Building language shared object {langlib}")
+                Language.build_library(str(langlib), [src_dir])
+                LOGGER.info(f"Saved language shared object {langlib}")
         else:
             LOGGER.info(f"Found language shared object {langlib}")
 

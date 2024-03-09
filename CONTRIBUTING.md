@@ -46,6 +46,7 @@ You may disable linting rules for specific lines/files in cases where the lintin
 You may also run linting at the repo root directory (which are the same commands in PR validation):
 
 ```
+pip install pylint flake8
 pylint ./ --recursive=y
 flake8 ./
 ```

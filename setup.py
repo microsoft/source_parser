@@ -20,7 +20,9 @@ VERSIONFILE = path.join(HERE, "source_parser", "_version.py")
 with open(VERSIONFILE, "rt", encoding="utf-8") as f:
     version = f.read()
     main_ns = {}
+    # pylint: disable=exec-used
     exec(version, main_ns)
+    # pylint: enable=exec-used
     VERSTR = main_ns['__version__']
 
 setup(

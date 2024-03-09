@@ -88,6 +88,8 @@ from tree_sitter import Parser
 from source_parser.utils import tokenize
 from source_parser.tree_sitter import get_language, LanguageId, lang2lits
 
+# pylint: disable=too-many-instance-attributes
+
 
 class Deduper:
     """
@@ -152,8 +154,7 @@ class Deduper:
                 for cand in candidates:
                     self.duplicates_keys.add(cand)
             return True
-        else:
-            return False
+        return False
 
     def keys_of_duplicates(self):
         """Return set of keys of duplicates."""
@@ -258,12 +259,7 @@ class CodeDeduper:
             self.m_set.update(t.encode("utf8"))
         for t in tokens_mset:
             self.m_mset.update(t.encode("utf8"))
-        if len(
-            set(self.lsh_set.query(self.m_set)) & set(self.lsh_mset.query(self.m_mset))
-        ):
-            return True
-        else:
-            return False
+        return len(set(self.lsh_set.query(self.m_set)) & set(self.lsh_mset.query(self.m_mset))) > 0
 
     def _process_data(self, d):
         """Tokenize code string and return only identifiers and literals."""
@@ -275,3 +271,4 @@ class CodeDeduper:
             for i in range(len(tokens))
             if types[i] in self.literals or "identifier" in types[i]
         ]
+# pylint: enable=too-many-instance-attributes

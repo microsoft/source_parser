@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=invalid-name
+
 """
 repo_parse
 
@@ -22,7 +24,7 @@ import argparse
 
 import source_parser.cli
 from source_parser.cli import TqdmLoggingHandler
-import source_parser.cli.observers as observers
+from source_parser.cli import observers
 from source_parser.cli.crawler import CrawlCrawler
 
 from source_parser.parsers import PythonParser, JavascriptParser, JavaParser, CppParser, CSharpParser, TypescriptParser
@@ -30,10 +32,18 @@ from source_parser.parsers import PythonParser, JavascriptParser, JavaParser, Cp
 LOG_FMT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
 
 
+def load_tasks(repolists):
+    tasks = []
+    for repolist in repolists:
+        with open(repolist, 'r', encoding='utf-8') as file:
+            tasks.append(json.load(file))
+    return chain(*tasks)
+
+
 def main():
     if "-v" in sys.argv:
         print(f'{source_parser.__version__}')
-        exit()
+        sys.exit()
 
     LANG_MAP = {
         "python": PythonParser,
@@ -185,9 +195,7 @@ def main():
     )
 
     if ARGS.no_logs:
-        LOGFILE = Path(ARGS.outdir) / "{}-{}-{}.log".format(
-            observers.TODAY, observers.TIME, "crawlercrawler"
-        )
+        LOGFILE = Path(ARGS.outdir) / f"{observers.TODAY}-{observers.TIME}-crawlercrawler.log"
         logging.basicConfig(
             level=logging.WARNING,
             format=LOG_FMT,
@@ -196,7 +204,7 @@ def main():
             filemode="w",
         )
 
-    LOGGER = logging.getLogger("repocontext")
+    LOGGER = logging.getLogger("repo_parse")
     LOGGER.setLevel(logging.WARNING)
     CONSOLE = TqdmLoggingHandler(logging.WARNING)  # REPORT
     CONSOLE.setFormatter(logging.Formatter(LOG_FMT))
@@ -208,14 +216,14 @@ def main():
         ARGS.token = ""  # so the token does not leak into the logs
 
     if ARGS.no_logs:
-        LOGGER.report("Saving logs up to INFO in {}".format(LOGFILE))
+        LOGGER.report(f"Saving logs up to INFO in {LOGFILE}")
 
     if ARGS.duplicate_report_file:
-        ARGS.duplicate_report_file = "{}-{}".format(observers.TODAY, observers.TIME)
+        ARGS.duplicate_report_file = f"{observers.TODAY}-{observers.TIME}"
 
     LOGGER.report(ARGS)
 
-    TASKS = chain(*[json.load(open(repolist)) for repolist in ARGS.repolist])
+    TASKS = load_tasks(ARGS.repolist)
     if ARGS.first_k:
         TASKS = islice(TASKS, 0, ARGS.first_k)
 

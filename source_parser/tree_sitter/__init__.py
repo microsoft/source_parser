@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=line-too-long,fixme,too-many-nested-blocks,too-many-locals,too-many-branches
+
 from collections import Counter
 from typing import List, Tuple, Dict
 import pickle
@@ -108,6 +110,7 @@ lang2statements = {
         "using_directive",
     ],
 }
+
 
 def get_tokens(node, tokens: List, types: List, preserve_statement: bool = False, lang: LanguageId = None):
     """
@@ -236,15 +239,15 @@ def _file_tokenizer(
             ret_type.append(types[i])
 
             # This will at least get rid of comments
-            uncommented_code = code[sp[0]][sp[1] : ep[1]].decode("utf-8").split("//")[0]
+            uncommented_code = code[sp[0]][sp[1]: ep[1]].decode("utf-8").split("//")[0]
             uncommented_code = re.sub(r"\/\*(.|\n)*\*\/", "", uncommented_code)
             ret_code.append(uncommented_code)
         elif sp[0] == ep[0]:
             ret_pos.append(token)
-            ret_code.append(code[sp[0]][sp[1] : ep[1]].decode("utf-8"))
+            ret_code.append(code[sp[0]][sp[1]: ep[1]].decode("utf-8"))
             ret_type.append(types[i])
         else:
-            out = code[sp[0]][sp[1] :]
+            out = code[sp[0]][sp[1]:]
             for lineid in range(sp[0] + 1, ep[0]):
                 out += code[lineid]
             out += code[ep[0]][: ep[1]]
@@ -252,17 +255,16 @@ def _file_tokenizer(
             ret_code.append(out.decode("utf-8"))
             ret_type.append(types[i])
 
-
     # Manually check for empty final line
     if code[-1].strip() == b"" and keep_newline and ret_code[-1] != "\n":
-        ret_pos.append([]);
-        ret_code.append("\n");
-        ret_type.append("new_line");
+        ret_pos.append([])
+        ret_code.append("\n")
+        ret_type.append("new_line")
 
     return ret_pos, ret_code, ret_type
 
 
-class LiteralCount(object):
+class LiteralCount():
 
     PARSER = Parser()
 
@@ -307,8 +309,9 @@ class LiteralCount(object):
             path of file to load
         """
         try:
-            self.lits_counter = pickle.load(open(file_name, "rb"))
-        except Exception as e:
+            with open(file_name, "rb") as f:
+                self.lits_counter = pickle.load(f)
+        except Exception:
             self.lits_counter = {
                 "str": Counter(),
                 "num": Counter(),
@@ -325,10 +328,8 @@ class LiteralCount(object):
         file_name (`str`):
             path of file to save
         """
-        try:
-            pickle.dump(self.lits_counter, open(file_name, "wb"))
-        except Exception as e:
-            return e
+        with open(file_name, "wb") as f:
+            pickle.dump(self.lits_counter, f)
 
     def get_top_lits(
         self,
@@ -433,7 +434,7 @@ class LiteralCount(object):
                         lits["regex"][token] += 1
 
             return lits
-        except Exception as e:
+        except Exception:
             return lits
 
     def update(self, litses: List[Dict]):
@@ -494,7 +495,8 @@ def normalize(
     lits (`Dict[str, List[str]]`):
         High-frequency literals which will be normalized in &lt;XX_LIT: lit&gt; form, default is None.
     comment (`str`):
-        Comment handling logic. 'remove' will remove all comments. 'normalize' will change all comments to '#<COMMENT>'. 'keep' will keep comments as-is. default is 'remove'
+        Comment handling logic. 'remove' will remove all comments. 'normalize' will change all comments to '#<COMMENT>'. 
+        'keep' will keep comments as-is. default is 'remove'
     indent (`bool`):
         whether to keep track or not of &lt;INDENT&gt;/&lt;DEDENT&gt;, default is True
     preserve_statement (`bool`):
@@ -502,7 +504,8 @@ def normalize(
     special_tokens_map (`Dict[str, str]`):
         custom replacements with these given tokens, default is None
     special_chars (`List[str]`):
-        List of special characters to convert. They will be converted to the following format: "U+0000" where 0000 is the unicode for the character. default is None
+        List of special characters to convert. They will be converted to the following format: 
+        "U+0000" where 0000 is the unicode for the character. default is None
 
     Returns:
 
@@ -511,14 +514,14 @@ def normalize(
     """
     PARSER.set_language(get_language(lang))
     if lits is None:
-        lits = dict()
+        lits = {}
     for name in ["num", "str", "char", "regex"]:
         if name not in lits:
             lits[name] = []
     if special_tokens_map is None:
-        special_tokens_map = dict()
+        special_tokens_map = {}
     if special_chars is None:
-        special_chars_map = dict()
+        special_chars_map = {}
     else:
         special_chars_map = {
             c: f"U+{format(ord(c),'X').zfill(4)}" for c in special_chars
@@ -529,7 +532,7 @@ def normalize(
         tokens = []
         types = []
         get_tokens(root, tokens, types, preserve_statement, lang)
-        _negativeNumberHandling(tokens, types, lang2lits[lang][0])
+        handle_negative_number(tokens, types, lang2lits[lang][0])
         poss, tokens, types = _file_tokenizer(code, tokens, types)
         norm_code = norm_untokenize(
             poss,
@@ -543,47 +546,40 @@ def normalize(
             special_chars_map,
         )
         return norm_code
-    except Exception as e:
+    except Exception:
         return ""
 
-def _negativeNumberHandling(tokens, types, numericLitTypes):
+
+def handle_negative_number(tokens, types, numeric_lteral_types):
     i = 0
-    while (i < len(types)):
-      if types[i] == '-':
-        _handleOneNegativeCase(tokens, types, i, numericLitTypes)
-      i += 1
+    while i < len(types):
+        if types[i] == '-':
+            handle_negative_case(tokens, types, i, numeric_lteral_types)
+        i += 1
 
-def _handleOneNegativeCase(tokens, types, hyphenIdx, numericLitTypes):
-    if types[hyphenIdx + 1] not in numericLitTypes:
-      return
-    if (_isNumericOperator(types[hyphenIdx - 1]) or
-        types[hyphenIdx - 1] == "," or
-        types[hyphenIdx - 1] == "(" or
-        types[hyphenIdx - 1] == "{" or
-        types[hyphenIdx - 1] == "["):
+
+def handle_negative_case(tokens, types, negative_index, numeric_literal_types):
+    if types[negative_index + 1] not in numeric_literal_types:
+        return
+    if (is_numeric_operator_field(types[negative_index - 1])
+        or types[negative_index - 1] == ","
+        or types[negative_index - 1] == "("
+        or types[negative_index - 1] == "{"
+            or types[negative_index - 1] == "["):
         # This is a negative number and not a subtraction
-        tokens[hyphenIdx][1] = tokens[hyphenIdx + 1][1]
-        types[hyphenIdx] = types[hyphenIdx + 1]
+        tokens[negative_index][1] = tokens[negative_index + 1][1]
+        types[negative_index] = types[negative_index + 1]
 
-        for i in range(hyphenIdx + 1, len(types) - 1):
+        for i in range(negative_index + 1, len(types) - 1):
             tokens[i] = tokens[i + 1]
             types[i] = types[i + 1]
         tokens.pop()
         types.pop()
 
-def _isNumericOperator(field):
-    return field == "=" or \
-           field == "==" or \
-           field == "===" or \
-           field == "!=" or \
-           field == "!==" or \
-           field == "+" or \
-           field == "-" or \
-           field == "*" or \
-           field == "/" or \
-           field == "%" or \
-           field == "!" or \
-           field == "not"
+
+def is_numeric_operator_field(field):
+    return field in ("=", "==", "===", "!=", "!==", "+", "-", "*", "/", "%", "!", "not")
+
 
 def norm_untokenize(
     poses: List[List[Tuple[int, int]]],
@@ -635,11 +631,11 @@ def norm_untokenize(
     """
     code_string = ""
     prev_sp = None
-    prev_ep = None
+    prev_ep = (0, 0)
     prev_indent = 0
     indent_size = -1
     for pos, token, tp in zip(poses, tokens, types):
-        if tp == "new_line" or tp == "\n":
+        if tp in ("new_line", "\n"):
             code_string += "\n"
             continue
         if tp == "endofstatement":
@@ -660,7 +656,7 @@ def norm_untokenize(
             add_token = (
                 special_tokens_map[token]
                 if token in special_tokens_map
-                else "<REGEX_LIT:%s>" % (token)
+                else f"<REGEX_LIT:{token}>"
                 if token in lits["regex"]
                 else "<REGEX_LIT>"
             )
@@ -676,7 +672,7 @@ def norm_untokenize(
             for q in char_quote_options:
                 if token_string.startswith(q):
                     start_quote = q
-                    char_lit = char_lit[len(q) :]
+                    char_lit = char_lit[len(q):]
                     if token_string.endswith(q):
                         end_quote = q
                         char_lit = char_lit[: -len(q)]
@@ -693,11 +689,11 @@ def norm_untokenize(
                 )
         elif tp in litnames[1] and token not in keywords:
             if token.startswith('R"('):
-            # This is a C++ Raw String scenario. Must be handled separately.
+                # This is a C++ Raw String scenario. Must be handled separately.
                 qualifier = "R"
                 str_lit = token[len('R"('):-len('")')]
             else:
-            # docstrings will be changed to <STR_LIT> too
+                # docstrings will be changed to <STR_LIT> too
                 str_quote_options = ["'''", '"""', "'", '"', '`']
                 start_quote = ""
                 end_quote = ""
@@ -712,7 +708,7 @@ def norm_untokenize(
                 for q in str_quote_options:
                     if token_string.startswith(q):
                         start_quote = q
-                        str_lit = str_lit[len(q) :]
+                        str_lit = str_lit[len(q):]
                         if token_string.endswith(q):
                             end_quote = q
                             str_lit = str_lit[: -len(q)]
@@ -733,11 +729,12 @@ def norm_untokenize(
             add_token = (
                 special_tokens_map[token]
                 if token in special_tokens_map
-                else "<NUM_LIT:%s>" % (token)
+                else f"<NUM_LIT:{token}>"
                 if token in lits["num"]
                 else "<NUM_LIT>"
             )
-        if prev_sp is None or (sp[0] == prev_ep[0] and sp[1] == prev_ep[1]):
+
+        if not prev_sp or (sp[0] == prev_ep[0] and sp[1] == prev_ep[1]):
             code_string += add_token
         elif sp[0] == prev_ep[0]:
             if code_string[-1] != " ":
@@ -753,17 +750,17 @@ def norm_untokenize(
                     if sp[1] - prev_indent > 2 * indent_size:
                         omit = True
                     else:
-                        for i in range(prev_indent, sp[1], indent_size):
+                        for _ in range(prev_indent, sp[1], indent_size):
                             code_string += "<INDENT>"
                 elif sp[1] - prev_indent < 0:
-                    for i in range(sp[1], prev_indent, indent_size):
+                    for _ in range(sp[1], prev_indent, indent_size):
                         code_string += "<DEDENT>"
                 code_string += add_token
                 if not omit:
                     prev_indent = sp[1]
             else:
                 code_string += "\n"
-                for i in range(sp[1]):
+                for _ in range(sp[1]):
                     code_string += " "
                 code_string += add_token
         prev_sp, prev_ep = sp, ep

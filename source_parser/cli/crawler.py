@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=too-many-instance-attributes,no-member
 """
 CrawlCrawler crawls crawled github repos and applies
 observers to clone, walk and parser source code
@@ -66,7 +67,7 @@ def notify(observers, task, timeout=20):
             output['statistics'] = stats dict accumulated
             (for when errors occur)
     """
-    statistics = dict()
+    statistics = {}
     for obs in observers:
         for label in obs.statistic_labels:
             statistics[label] = 0
@@ -83,9 +84,7 @@ def notify(observers, task, timeout=20):
             LOGGER.info("Quitting...")
             raise
         except Exception as err:
-            output["error_msgs"].append(
-                "Processing url %s yielded %s" % (task["url"], err)
-            )
+            output["error_msgs"].append(f"Processing url {task['url']} yielded {err}")
 
     return output
 
@@ -133,8 +132,8 @@ class Deduplicate:
 class ProcessResults:
 
     def __init__(self, observers, num_tasks, protocol, part=None):
-        self.seenfiles = dict()
-        self.statistics = dict()  # statistics[label] = value
+        self.seenfiles = {}
+        self.statistics = {}  # statistics[label] = value
         self.statistics["number_of_tasks"] = num_tasks
         self.statistics["tasks_finished"] = 0
         self.statistics["items_written"] = 0
@@ -186,14 +185,14 @@ class ProcessResults:
 
 
 class PipelineDispatch:
-    def __init__(self, observers, tasks, notify, **kwargs):
+    def __init__(self, observers, tasks, message, **kwargs):
         if "compression" in kwargs:
             assert kwargs["compression"] in OPEN_PROTOCOLS
         self.num_dedupe = kwargs.get("num_dedupe_procs", 1)
         num_save_files = kwargs.get("num_save_files", 1)
 
         self.tasks = list(tasks)  # copy to prevent side effects
-        self.notify = notify
+        self.notify = message
         self.processor_pool = []
 
         self.obs_id = ray.put(observers)
@@ -282,7 +281,7 @@ class PipelineDispatch:
             time = kwargs["duplicate_report_file"]
             dupe_report_file = Path(processed_dir)
             dupe_report_file /= f'{time}_duplicate_report_file.json'
-            with open(dupe_report_file, "w") as fout:
+            with open(dupe_report_file, "w", encoding='utf-8') as fout:
                 json.dump(self.report_duplicates(), fout)
 
 
@@ -291,7 +290,7 @@ class CrawlCrawler:
     Crawls Crawled Data, provides subjects for the observers to process.
     """
 
-    def __init__(self, observers, processed_dir, **kwargs):
+    def __init__(self, observers, processed_dir):
         """
         Initialize the CrawlCrawler
 
@@ -363,7 +362,7 @@ class CrawlCrawler:
         self.speak()
         num_workers = num_workers or 1024
         report_freq = kwargs.get("report_freq", 1024)
-        num_save_files = kwargs.get("num_save_files", 1)
+        # num_save_files = kwargs.get("num_save_files", 1)
 
         if not ray.is_initialized():
             # make object_memory_store 25% of total system memory, silence warnings
@@ -383,7 +382,7 @@ class CrawlCrawler:
                 for result_id in dispatch_iter:
                     pbar.update(1)
 
-                    return_info, error_msgs = ray.get(result_id)
+                    _, error_msgs = ray.get(result_id)
                     for msg in error_msgs:
                         LOGGER.warning(msg)
                     if pbar.n % report_freq == 0:

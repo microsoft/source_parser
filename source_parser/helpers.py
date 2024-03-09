@@ -5,12 +5,12 @@
 A bunch of auxiliary functions for working with source-parser
 """
 
-from source_parser.parsers.python_parser import PythonParser
-from tree_sitter import Parser
-from source_parser.tree_sitter.config import get_language, LanguageId
-from source_parser.tree_sitter import normalize
 from copy import deepcopy
 import re
+from tree_sitter import Parser
+from source_parser.parsers.python_parser import PythonParser
+from source_parser.tree_sitter import normalize
+from source_parser.tree_sitter.config import get_language, LanguageId
 
 PARSER = Parser()
 PARSER.set_language(get_language(LanguageId("python")))
@@ -55,10 +55,12 @@ def replace_schem_method(schem_file, schem_method, schem_bug):
 def meth_has_syn_err(meth_string, parser=PARSER):
     """left adjusts the meth_string and then says if that has a syntax error"""
     try:
-        schem_meth = schematize_method(meth_string, PARSER)
+        schem_meth = schematize_method(meth_string, parser)
         if not schem_meth["syntax_pass"]:
             return True
+    # pylint: disable=bare-except
     except:
+        # pylint: enable=bare-except
         # can get IndexError, IndentationError, SyntaxError, TabError, ParseError, TokenError, TimeoutException
         return True
     return False
@@ -91,8 +93,7 @@ def yield_schem_meths(schem_file):
 
     adds a 'class_name' attribute if it's a class method
     """
-    for schem_meth in schem_file["methods"]:
-        yield schem_meth
+    yield from schem_file["methods"]
     for schem_class in schem_file["classes"]:
         for schem_meth in schem_class["methods"]:
             schem_meth["class_name"] = schem_class["name"]
@@ -101,21 +102,16 @@ def yield_schem_meths(schem_file):
 
 def get_schem_meth_by_line_num(schem_file, line_num):
     for schem_meth in yield_schem_meths(schem_file):
-        if (
-            line_num >= schem_meth["start_point"][0]
-            and line_num <= schem_meth["end_point"][0]
-        ):
+        if schem_meth["start_point"][0] <= line_num <= schem_meth["end_point"][0]:
             return schem_meth
-    import pdb
-
-    pdb.set_trace()
+    return None
 
 
 def get_filepath_to_schem_file(touched_filepaths):
     filepath_to_schem_file = {}
     for filepath in touched_filepaths:
         if filepath.strip():
-            with open(filepath, "r") as f:
+            with open(filepath, "r", encoding="utf-8") as f:
                 filetext = f.read()
             filepath_to_schem_file[filepath] = schematize_file(filetext)
     return filepath_to_schem_file
@@ -137,13 +133,14 @@ def get_schem_meth_by_name(meth_name, schem_file, class_name=None):
             continue
         if class_name is None and ("class_name" not in schem_meth):
             return schem_meth
-        elif class_name is not None and ("class_name" in schem_meth):
+        if class_name is not None and ("class_name" in schem_meth):
             if class_name == schem_meth["class_name"]:
                 return schem_meth
+    return None
 
 
 def get_leading_whitespace(string):
-    start, end = re.match("^(\s*)", string).span()
+    start, end = re.match(r"^(\s*)", string).span()
     return string[start:end]
 
 
@@ -152,8 +149,7 @@ def reindent(og_function, new_function):
     indent = get_leading_whitespace(og_function)
     if len(indent) == 0:
         return new_function
-    else:
-        return indent + ("\n" + indent).join(new_function.splitlines())
+    return indent + ("\n" + indent).join(new_function.splitlines())
 
 
 def get_indent_str(schem_file):
@@ -186,7 +182,6 @@ def left_adjust(string):
     leading_whitespace_len = re.match(r"\s*", string).span()[1]
     if leading_whitespace_len == 0:
         return string
-    else:
-        return "\n".join(
-            [line[leading_whitespace_len:] for line in string.splitlines()]
-        )
+    return "\n".join(
+        [line[leading_whitespace_len:] for line in string.splitlines()]
+    )
