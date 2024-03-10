@@ -26,10 +26,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install pylint pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with pylint
-      run: |
-        pylint ./ --recursive=y
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi    
     - name: Get tree-sitter submodule
       run: |
         git submodule update --init --recursive
@@ -37,6 +34,9 @@ jobs:
       run: |
         python setup.py bdist_wheel
         pip install dist/source_parser-*.whl
+    - name: Lint with pylint
+      run: |
+        pylint ./ --recursive=y
     - name: Test with pytest
       run: |
         pytest test/
