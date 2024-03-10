@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-import tqdm
+# pylint: disable=bare-except,duplicate-code
 import logging
-
+import tqdm
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 REPORT_LOG_LEVEL = logging.WARNING + 1

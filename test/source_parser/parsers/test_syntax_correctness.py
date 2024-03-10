@@ -16,7 +16,7 @@ def test_syntax_fail():
     ]
 
     # print(class_dict_list)
-    assert class_dict_list[0]['syntax_pass'] == False
+    assert class_dict_list[0]['syntax_pass'] is False
 
 
 def test_syntax_pass():
@@ -28,7 +28,7 @@ def test_syntax_pass():
     ]
 
     # print(class_dict_list)
-    assert class_dict_list[0]['syntax_pass'] == True
+    assert class_dict_list[0]['syntax_pass'] is True
 
 
 if __name__ == "__main__":

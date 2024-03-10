@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=too-many-public-methods,duplicate-code
 """
 jsts_parser.py
 
@@ -124,6 +125,7 @@ class JSTSParser(LanguageParser):
         for child in parent.children:
             if child.type in type_string:
                 return child
+        return None
 
     def update(self, file_contents):
         """Update the file being parsed"""
@@ -133,9 +135,9 @@ class JSTSParser(LanguageParser):
         # the method docstring is the sibling node of the declaration
         # so it's necessary to record the corresponding declaration node of such method
         # key is tuple(start_byte, end_byte) of method
-        self._node2declaration = dict()
-        self._node2name = dict()
-        self._node2export = dict()
+        self._node2declaration = {}
+        self._node2name = {}
+        self._node2export = {}
 
     @classmethod
     def get_lang(cls) -> str:
@@ -212,7 +214,7 @@ class JSTSParser(LanguageParser):
             return ""
         return file_contents
 
-    def get_fn_in_declarations(self, node, is_export=False):
+    def get_fn_in_declarations(self, node):
         """
         Extract methods defined inside declarations
         """
@@ -243,14 +245,15 @@ class JSTSParser(LanguageParser):
                     methods.append(method_def)
                     self._node2declaration[(method_def.start_byte, method_def.end_byte)] = declaration
                 # If the first child except ( or { is call_expression, the child of call_expression might be a function.
-                if value_node.children[1].type == "call_expression" and len(value_node.children[1].children) > 0 and value_node.children[1].children[0].type in self.inside_method_types:
+                if value_node.children[1].type == "call_expression" and len(value_node.children[1].children) > 0 \
+                        and value_node.children[1].children[0].type in self.inside_method_types:
                     method_def = value_node.children[1].children[0]
                     methods.append(method_def)
                     self._node2declaration[(method_def.start_byte, method_def.end_byte)] = declaration
 
         return methods
 
-    def get_fn_in_expressions(self, node, is_export=False):
+    def get_fn_in_expressions(self, node):
         """
         Extract methods defined inside expression statements.
         """
@@ -491,7 +494,7 @@ class JSTSParser(LanguageParser):
             method_root_node = self._node2export[(method_node.start_byte, method_node.end_byte)]
 
         signature, default_arguments = self.get_signature_default_args(
-            method_root_node or method_node, type_sig="function"
+            method_root_node or method_node
         )
         results = {
             "original_string": self.span_select(method_node, indent=False),
@@ -516,7 +519,7 @@ class JSTSParser(LanguageParser):
             name = self.span_select(name_node, indent=False)
         else:
             name = ""
-        results["name"] = (name)
+        results["name"] = name
 
         children_types = list(map(lambda x: x.type, method_node.children))
         num_decorators = children_types.count('decorator')  # decorators come first
@@ -680,7 +683,7 @@ class JSTSParser(LanguageParser):
     #         return strip_c_style_comment_delimiters(self.span_select(parent_node.prev_sibling, indent=False))
     #     return ""
 
-    def get_signature_default_args(self, method_node, type_sig):
+    def get_signature_default_args(self, method_node):
         """
         Parameters
         ----------

@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=invalid-name
 """
 repo_scrape
 
@@ -13,39 +14,37 @@ code in git repos. See command line help dialogue for usage:
 
 import os
 import sys
-import json
 import base64
 from pathlib import Path
 import logging
-from itertools import chain, islice
+from itertools import islice
 import argparse
 import yaml
 from columnize import columnize
 
 import source_parser.cli
 from source_parser.cli import TqdmLoggingHandler
-import source_parser.cli.observers as observers
+from source_parser.cli import observers
 from source_parser.cli.crawler import CrawlCrawler
+from source_parser.cli.repo_parse import load_tasks
 
 LOG_FMT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
 
 
 def main():
-    LANGS = yaml.load(
-        open(Path(source_parser.__file__).parent / 'languages.yml'),
-        yaml.loader.BaseLoader
-    )
+    with open(Path(source_parser.__file__).parent / 'languages.yml', 'r', encoding='utf-8') as file:
+        LANGS = yaml.load(file, Loader=yaml.BaseLoader)
     GITHUB_LANGS = {}
     for label, value in LANGS.items():
         GITHUB_LANGS[label.replace(' ', '_')] = value
 
     if "--list-langs" in sys.argv:
         print(columnize(list(GITHUB_LANGS.keys()), displaywidth=88, colsep=',\t', ljust=False))
-        exit()
+        sys.exit()
 
     if "-v" in sys.argv:
         print(f'{source_parser.__version__}')
-        exit()
+        sys.exit()
 
     PARSER = argparse.ArgumentParser(
         description="""
@@ -250,9 +249,7 @@ def main():
     )
 
     if ARGS.no_logs:
-        LOGFILE = Path(ARGS.outdir) / "{}-{}-{}.log".format(
-            observers.TODAY, observers.TIME, "crawlercrawler"
-        )
+        LOGFILE = Path(ARGS.outdir) / f"{observers.TODAY}-{observers.TIME}-crawlercrawler.log"
         logging.basicConfig(
             level=logging.WARNING,
             format=LOG_FMT,
@@ -273,14 +270,14 @@ def main():
         ARGS.token = ""  # so the token does not leak into the logs
 
     if ARGS.no_logs:
-        LOGGER.report("Saving logs up to INFO in {}".format(LOGFILE))
+        LOGGER.report(f"Saving logs up to INFO in {LOGFILE}")
 
     if ARGS.duplicate_report_file:
-        ARGS.duplicate_report_file = "{}-{}".format(observers.TODAY, observers.TIME)
+        ARGS.duplicate_report_file = f"{observers.TODAY}-{observers.TIME}"
 
     LOGGER.report(ARGS)
 
-    TASKS = chain(*[json.load(open(repolist)) for repolist in ARGS.repolist])
+    TASKS = load_tasks(ARGS.repolist)
     if ARGS.first_k:
         TASKS = islice(TASKS, 0, ARGS.first_k)
 

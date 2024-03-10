@@ -50,7 +50,7 @@ REGEX_LICENSES = [
     PATENTS_REGEX + OTHER_EXT_REGEX,
 ]
 
-RE_LICENSE_FILE = re.compile("|".join([r"(?:{})".format(r) for r in REGEX_LICENSES]))
+RE_LICENSE_FILE = re.compile("|".join([f"(?:{r})" for r in REGEX_LICENSES]))
 
 
 def match_license_file(filename):

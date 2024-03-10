@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=duplicate-code
 """
 csharp_parser.py
 
@@ -94,33 +95,17 @@ class CSharpParser(LanguageParser):
     _namespace_types = ("namespace_declaration",)
     _include_patterns = "*?.cs"
 
-    def __init__(self, file_contents=None, parser=None, remove_comments=False):
-        """
-        Initialize LanguageParser
-
-        Parameters
-        ----------
-        file_contents : str
-            string containing a source code file contents
-        parser : tree_sitter.parser (optional)
-            optional pre-initialized parser
-        remove_comments: True/False
-            whether to strip comments from the source file before structural
-            parsing. Default is False
-        """
-        super().__init__(file_contents, parser, remove_comments)
-
     def update(self, file_contents):
         """Update the file being parsed"""
         self.file_bytes = file_contents.encode("utf-8")
         self.tree = self.parser.parse(self.file_bytes)
         # key is tuple(start_byte, end_byte)
-        self._node2namespace = dict()
-        self._node2parent = dict()
+        self._node2namespace = {}
+        self._node2parent = {}
         self._traverse_namespace(self.tree.root_node)
 
     @classmethod
-    def get_lang(self):
+    def get_lang(cls):
         return "csharp"
 
     @property
@@ -159,7 +144,7 @@ class CSharpParser(LanguageParser):
         It will be parsed as several nodes, so return a list.
         """
 
-        if parent_node == None:
+        if parent_node is None:
             parent_node = self.tree.root_node
 
         node_index = -1
@@ -178,8 +163,7 @@ class CSharpParser(LanguageParser):
 
         if node_index == 0 or stop_index == node_index - 1:
             return None
-        else:
-            return parent_node.children[stop_index + 1:node_index]
+        return parent_node.children[stop_index + 1:node_index]
 
     @property
     def file_docstring(self):
@@ -321,10 +305,8 @@ class CSharpParser(LanguageParser):
             self.span_select(name_node, indent=False) if name_node else ""
         )
 
-        parameters_node = None
         for child in method_node.children:
             if child.type == "parameter_list":
-                paramerters_node = child
                 param_nodes = children_of_type(child, "parameter")
                 result["attributes"]["parameters"] = self.select(param_nodes, indent=False) if len(param_nodes) > 0 else []
                 break

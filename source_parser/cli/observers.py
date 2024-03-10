@@ -14,7 +14,8 @@ from datetime import datetime
 from pathlib import Path
 
 from source_parser import __version__
-from source_parser.cli.utils import get_repo_data, static_hash, time_limit, TimeoutException
+from source_parser.cli.utils import get_repo_data
+from source_parser.utils import static_hash, time_limit, TimeoutException
 
 NOW = datetime.now()
 TODAY = str(NOW).split()[0]
@@ -183,8 +184,7 @@ class RepoContextObserver(Observer):
             except Exception as e_err:
                 statistics["preprocess_failed"] += 1
                 error_msgs.append(
-                    "\n\tFile %s/%s raised %s: %s\n"
-                    % (url, rel_path, type(e_err), e_err)
+                    f"\n\tFile {url}/{rel_path} raised {type(e_err)}: {e_err}\n"
                 )
                 continue
 
@@ -216,8 +216,7 @@ class RepoContextObserver(Observer):
             except Exception as e_err:  #
                 statistics["schema_parse_failed"] += 1
                 error_msgs.append(
-                    "\n\tFile %s/%s raised %s: %s\n"
-                    % (url, rel_path, type(e_err), e_err)
+                    f"\n\tFile {url}/{rel_path} raised {type(e_err)}: {e_err}\n"
                 )
 
         return results, error_msgs

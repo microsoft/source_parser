@@ -46,7 +46,7 @@ from source_parser.deduper import Deduper, CodeDeduper
         ),
     ],
 )
-def test_Deduper(test_input, expected):
+def test_deduper(test_input, expected):
     deduper = Deduper()
     deduped = []
     for d in test_input:
@@ -73,7 +73,7 @@ def test_Deduper(test_input, expected):
         ),
     ],
 )
-def test_CodeDeduper(test_input, expected):
+def test_code_deduper(test_input, expected):
     deduper = CodeDeduper(language="python")
     deduped = []
     for d in test_input:

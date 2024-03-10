@@ -8,7 +8,7 @@ DIR = "test/assets/python_examples/"
 
 def test_methods():
     source = DIR + "iMath.py"
-    with open(source, "r") as f:
+    with open(source, "r", encoding='utf-8') as f:
         cp = PythonParser(f.read())
 
         methods = cp.schema["methods"]

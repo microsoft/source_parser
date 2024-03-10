@@ -2,9 +2,6 @@
     "pylint.args": [
         "--rcfile=.pylintrc"
     ],
-    "flake8.args": [
-        "--config=.flake8"
-    ],
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8",
         "editor.formatOnSave": true
@@ -12,11 +9,10 @@
     "python.testing.unittestArgs": [
         "-v",
         "-s",
-        "./tests",
+        "./test",
         "-p",
         "test_*.py"
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "azure-pipelines.1ESPipelineTemplatesSchemaFile": true
 }

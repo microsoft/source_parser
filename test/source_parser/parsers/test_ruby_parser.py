@@ -7,6 +7,12 @@ from source_parser.parsers import RubyParser
 DIR = "test/assets/ruby_examples/"
 
 
+def create_ruby_parser(source):
+    with open(source, 'r', encoding='utf-8') as file:
+        rp = RubyParser(file.read())
+    return rp
+
+
 @pytest.mark.parametrize(
     "source, target",
     [
@@ -26,23 +32,21 @@ DIR = "test/assets/ruby_examples/"
     ],
 )
 def test_context(source, target):
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
-        assert cp.schema["contexts"] == target
+    rp = create_ruby_parser(source)
+    assert rp.schema["contexts"] == target
 
 
 def test_classes():
     source = DIR + "example.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
-        assert len(classes) == 4
+    classes = rp.schema['classes']
+    assert len(classes) == 4
 
-        cl1 = classes[0]
-        cl2 = classes[2]
-        cl3 = classes[3]
-        cl4 = classes[1]
+    cl1 = classes[0]
+    cl2 = classes[2]
+    cl3 = classes[3]
+    cl4 = classes[1]
 
     assert cl1["name"] == "CredentialNormalization"
     assert cl1["definition"] == "    class CredentialNormalization < Transition"
@@ -76,15 +80,14 @@ def test_classes():
 
 def test_methods():
     source = DIR + "example.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
+    classes = rp.schema['classes']
 
-        cl1 = classes[0]
-        cl2 = classes[2]
-        cl3 = classes[3]
-        cl4 = classes[1]
+    cl1 = classes[0]
+    cl2 = classes[2]
+    cl3 = classes[3]
+    cl4 = classes[1]
 
     m1, m2, m3, m4 = cl1["methods"]
     assert m1["name"] == "after_initialize"
@@ -133,12 +136,11 @@ def test_methods():
 
 def test_nested_class():
     source = DIR + "example.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
+    classes = rp.schema['classes']
 
-        cl = classes[0]
+    cl = classes[0]
 
     cl1 = cl["classes"][0]
     assert cl1["name"] == "RegistrationsVerifier"
@@ -153,26 +155,24 @@ def test_nested_class():
 
 def test_include():
     source = DIR + "example2.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
+    classes = rp.schema['classes']
 
-        cl = classes[0]
+    cl = classes[0]
 
     assert cl["attributes"]["contexts"] == ["LinterRegistry", "ERBLint.Linters.CustomRuleHelpers"]
 
 
 def test_open_classes():
     source = DIR + "example3.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
+    classes = rp.schema['classes']
 
-        assert len(classes) == 1
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     m1, m2 = cl["methods"]
     assert m1["name"] == "say_hello"
@@ -191,15 +191,14 @@ def test_module_level_methods():
     This unit test tests module-level method
     '''
     source = DIR + "example4.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        methods = cp.schema['methods']
+    methods = rp.schema['methods']
 
-        assert len(methods) == 2
+    assert len(methods) == 2
 
-        m1 = methods[0]
-        m2 = methods[1]
+    m1 = methods[0]
+    m2 = methods[1]
 
     assert m1["name"] == "is_counter_correct?"
     assert m1["signature"].strip() == 'def is_counter_correct?(processed_source)'
@@ -217,14 +216,13 @@ def test_class_level_methods():
     This unit test tests module-level method
     '''
     source = DIR + "example5.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
+    classes = rp.schema['classes']
 
-        assert len(classes) == 1
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     m1, m2 = cl["methods"]
     assert m1["name"] == "up"
@@ -243,19 +241,18 @@ def test_single_module():
     This unit test tests parsing of single module
     '''
     source = DIR + "example6.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        methods = cp.schema['methods']
+    methods = rp.schema['methods']
 
-        assert len(methods) == 6
+    assert len(methods) == 6
 
-        m1 = methods[0]
-        m2 = methods[1]
-        m3 = methods[2]
-        m4 = methods[3]
-        m5 = methods[4]
-        m6 = methods[5]
+    m1 = methods[0]
+    m2 = methods[1]
+    m3 = methods[2]
+    m4 = methods[3]
+    m5 = methods[4]
+    m6 = methods[5]
 
     assert m1["name"] == "assert_optimizely_experiments"
     assert m1["signature"].strip() == 'def assert_optimizely_experiments(experiments: {}, tracks: {}, activation: false, activation_calls: 1, &block)'
@@ -288,14 +285,13 @@ def test_single_module_with_class():
     This unit test tests parsing of single module
     '''
     source = DIR + "example7.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
+    classes = rp.schema['classes']
 
-        assert len(classes) == 1
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     assert cl["name"] == "TestHelper"
     assert cl["definition"] == "    class TestHelper"
@@ -334,14 +330,13 @@ def test_class_in_condition_case():
     This unit test tests parsing of single module
     '''
     source = DIR + "example8.rb"
-    with open(source, "r") as f:
-        cp = RubyParser(f.read())
+    rp = create_ruby_parser(source)
 
-        classes = cp.schema['classes']
+    classes = rp.schema['classes']
 
-        assert len(classes) == 1
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     assert cl["name"] == "SearchDotcomTopicResultViewTest"
     assert cl["definition"] == "  class SearchDotcomTopicResultViewTest < TestCase"

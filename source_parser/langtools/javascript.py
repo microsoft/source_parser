@@ -165,6 +165,6 @@ def fraction_of_tokens_with_whitespace(parser):
     return tokens_with_whitespace / max(included_tokens, 1)
 
 
-def minify_js(file_contents):
+def minify_js(file_contents, timeout=60):
     """Minify the file_contents"""
-    return requests.post(MINIFY_URL, data={"input": file_contents}).text
+    return requests.post(MINIFY_URL, data={"input": file_contents}, timeout=timeout).text

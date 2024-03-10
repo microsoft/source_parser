@@ -1,10 +1,17 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=line-too-long,too-many-statements
 import pytest
 from source_parser.parsers import CSharpParser
 
 DIR = "test/assets/csharp_examples/"
+
+
+def create_csharp_parser(source):
+    with open(source, 'r', encoding='utf-8') as file:
+        cp = CSharpParser(file.read())
+    return cp
 
 
 @pytest.mark.parametrize(
@@ -27,9 +34,8 @@ DIR = "test/assets/csharp_examples/"
     ],
 )
 def test_file_docstring(source, target):
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
-        assert cp.schema["file_docstring"] == target
+    cp = create_csharp_parser(source)
+    assert cp.schema["file_docstring"] == target
 
 
 @pytest.mark.parametrize(
@@ -57,22 +63,20 @@ def test_file_docstring(source, target):
     ],
 )
 def test_context(source, target):
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
-        assert cp.schema["contexts"] == target
+    cp = create_csharp_parser(source)
+    assert cp.schema["contexts"] == target
 
 
 def test_classes():
     source = DIR + "Class.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        classes = cp.schema['classes']
-        assert len(classes) == 1
+    classes = cp.schema['classes']
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
-        assert cl["original_string"] == """        [Handler(typeof(IHandler))]
+    assert cl["original_string"] == """        [Handler(typeof(IHandler))]
         public class IconFrame : IControlObjectSource, IHandlerSource
         {
                 // field _a
@@ -209,7 +213,8 @@ def test_classes():
 
     assert cl["module_type"] == "class"
     assert cl["attributes"]["namespace_prefix"] == "Eto.Drawing."
-    assert cl["attributes"]["bases"] == ["IControlObjectSource", "IHandlerSource"]
+    assert cl["attributes"]["bases"] == [
+        "IControlObjectSource", "IHandlerSource"]
     assert cl["attributes"]["modifiers"] == ["public"]
     assert cl["attributes"]["attributes"] == ["Handler(typeof(IHandler))"]
     assert cl["start_point"] == (20, 8)
@@ -218,10 +223,8 @@ def test_classes():
 
 def test_struct():
     source = DIR + "Struct.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
-
-        s2, s1 = cp.schema['classes']
+    cp = create_csharp_parser(source)
+    s2, s1 = cp.schema['classes']
 
     assert s1["original_string"] == """                public partial struct FMaterialParameterCollectionInfo
                 {
@@ -282,10 +285,9 @@ def test_struct():
 
 def test_interface():
     source = DIR + "Interface.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        i1, i2, c1 = cp.schema['classes']
+    i1, i2, _ = cp.schema['classes']
 
     assert i1["original_string"] == """    interface IEquatable<T>
     {
@@ -334,13 +336,12 @@ def test_interface():
 
 def test_class_fields():
     source = DIR + "Class.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        classes = cp.schema['classes']
-        assert len(classes) == 1
+    classes = cp.schema['classes']
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     f1, f2 = cl["attributes"]["fields"]
     assert f1["original_string"] == "private virtual readonly string _a;"
@@ -358,13 +359,12 @@ def test_class_fields():
 
 def test_class_properties():
     source = DIR + "Class.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        classes = cp.schema['classes']
-        assert len(classes) == 1
+    classes = cp.schema['classes']
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     p1, p2, p3, p4 = cl["attributes"]["properties"]
     assert p1["original_string"] == """object IHandlerSource.Handler
@@ -386,7 +386,8 @@ def test_class_properties():
     assert p2["name"] == "Handler"
     assert p2["accessors"] == "{ get; set; }"
 
-    assert p3["original_string"] == "public Size PixelSize { get { return Handler.GetPixelSize(this); } }"
+    assert p3[
+        "original_string"] == "public Size PixelSize { get { return Handler.GetPixelSize(this); } }"
     assert p3["docstring"] == """<summary>
  Gets the pixel size of the frame's bitmap
  </summary>
@@ -411,10 +412,9 @@ def test_class_properties():
 
 def test_struct_fields_properties():
     source = DIR + "Struct.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        s2, s1 = cp.schema['classes']
+    s2, s1 = cp.schema['classes']
 
     f1, f2 = s1["attributes"]["fields"]
     assert f1["original_string"] == "public FGuid StateId;"
@@ -429,7 +429,7 @@ def test_struct_fields_properties():
     assert f2["type"] == "UMaterialParameterCollection"
     assert f2["name"] == "ParameterCollection"
 
-    p1, p2 = s2["attributes"]["properties"]
+    p1, _ = s2["attributes"]["properties"]
     assert p1["original_string"] == "public double X { get; }"
     assert p1["docstring"] == ""
     assert p1["modifiers"] == ["public"]
@@ -440,10 +440,9 @@ def test_struct_fields_properties():
 
 def test_interface_fields_properties():
     source = DIR + "Interface.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        i1, i2, c1 = cp.schema['classes']
+    _, i2, _ = cp.schema['classes']
 
     p1 = i2["attributes"]["properties"][0]
 
@@ -464,13 +463,12 @@ def test_interface_fields_properties():
 
 def test_methods():
     source = DIR + "Class.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        classes = cp.schema['classes']
-        assert len(classes) == 1
+    classes = cp.schema['classes']
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     m1, m2, m3 = cl["methods"]
     assert m1["original_string"] == """                IconFrame(float scale)
@@ -542,12 +540,11 @@ This is not intended to be called directly."""
     assert m3["end_point"] == (65, 17)
 
     source = DIR + "AttributeMethod.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        classes = cp.schema['classes']
+    classes = cp.schema['classes']
 
-        cl = classes[0]
+    cl = classes[0]
 
     m1, m2 = cl["methods"]
     assert m1["original_string"] == """        [Test]
@@ -587,10 +584,8 @@ This is not intended to be called directly."""
     assert m2["attributes"]["return_type"] == "void"
 
     source = DIR + "Struct.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
-
-        s2, s1 = cp.schema['classes']
+    cp = create_csharp_parser(source)
+    s2, _ = cp.schema['classes']
 
     m1, m2 = s2["methods"]
     assert m1["original_string"] == """    public Coords(double x, double y)
@@ -623,10 +618,9 @@ This is not intended to be called directly."""
     assert m2["attributes"]["return_type"] == "string"
 
     source = DIR + "Interface.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        i1, i2, c1 = cp.schema['classes']
+    i1, _, _ = cp.schema['classes']
 
     m1 = i1["methods"][0]
     assert m1["original_string"] == """        bool Equals(T obj);"""
@@ -643,13 +637,12 @@ This is not intended to be called directly."""
 
 def test_nested_class():
     source = DIR + "NestedClass.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        classes = cp.schema['classes']
-        assert len(classes) == 1
+    classes = cp.schema['classes']
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
     cl = cl["classes"][0]
     assert cl["original_string"] == """    private class Soldier {
@@ -670,12 +663,11 @@ def test_nested_class():
 
 def test_nested_namespace():
     source = DIR + "NestedNamespace.cs"
-    with open(source, "r") as f:
-        cp = CSharpParser(f.read())
+    cp = create_csharp_parser(source)
 
-        classes = cp.schema['classes']
+    classes = cp.schema['classes']
 
-        c1, c2 = classes
+    c1, c2 = classes
 
     assert c1["attributes"]["namespace_prefix"] == "SomeNameSpace."
     assert c2["attributes"]["namespace_prefix"] == "SomeNameSpace.Nested."

@@ -3,37 +3,17 @@
 
 import os
 import shlex
-import signal
-import hashlib
 import logging
 import tempfile
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from contextlib import contextmanager
 from typing import Tuple, Union
 
 from source_parser.cli.licenses import match_license_file
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-class TimeoutException(Exception):
-    pass
-
-
-@contextmanager
-def time_limit(seconds):
-    def signal_handler(signum, frame):
-        raise TimeoutException("Timed out!")
-
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(seconds)
-    try:
-        yield
-    finally:
-        signal.alarm(0)  # turn off alarm
 
 
 def save_logging_in_file(logger, logfile=None, processed_dir=None, level=logging.INFO):
@@ -48,17 +28,6 @@ def save_logging_in_file(logger, logfile=None, processed_dir=None, level=logging
     handler = logging.FileHandler(logfile)
     handler.setLevel(level)
     logger.addHandler(handler)
-
-
-def static_hash(str_tuple):
-    """
-    hash a tuple of bytes or objects serializable with str, get consistent results across runs
-    without the hack of turning off the python hash seed
-    """
-    md5 = hashlib.md5()
-    for strn in str_tuple:
-        md5.update(str(strn).encode("utf-8"))
-    return md5.hexdigest()
 
 
 OPEN_ENCODING_KWARGS = [

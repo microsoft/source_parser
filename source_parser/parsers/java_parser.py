@@ -91,7 +91,7 @@ class JavaParser(LanguageParser):
     _include_patterns = "*?.java"
 
     @classmethod
-    def get_lang(self):
+    def get_lang(cls):
         return "java"
 
     @property
@@ -125,16 +125,15 @@ class JavaParser(LanguageParser):
         If the previous sibling is not a docstring, returns None.
         """
 
-        if parent_node == None:
+        if parent_node is None:
             parent_node = self.tree.root_node
 
         prev_sib = previous_sibling(node, parent_node)
         if prev_sib is None:
             return None
-        elif prev_sib.type in self._docstring_types:
+        if prev_sib.type in self._docstring_types:
             return prev_sib
-        else:
-            return None
+        return None
 
     @property
     def file_docstring(self):

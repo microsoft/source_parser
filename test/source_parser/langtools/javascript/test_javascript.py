@@ -7,8 +7,8 @@ Usage :
     tests the is_minified function in javascript.py
 """
 
-import pytest
 from pathlib import Path
+import pytest
 from source_parser.langtools.javascript import is_minified
 from source_parser.parsers import JavascriptParser
 
@@ -49,7 +49,9 @@ DIR = Path("test/assets/javascript_examples")
 )
 def test_is_minified(source, target):
     print("Filename: ", DIR / source)
-    answer = is_minified(JavascriptParser(open(DIR / source).read()))
+    with open(DIR / source, 'r', encoding='utf-8') as file:
+        content = file.read()
+    answer = is_minified(JavascriptParser(content))
     print(answer)
     print("target")
     print(target)

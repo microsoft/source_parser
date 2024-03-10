@@ -7,6 +7,12 @@ from source_parser.parsers import JavascriptParser
 DIR = "test/assets/typescript_examples/"
 
 
+def create_javascript_parser(source):
+    with open(source, 'r', encoding='utf-8') as file:
+        jp = JavascriptParser(file.read())
+    return jp
+
+
 @pytest.mark.parametrize(
     "source, target",
     [
@@ -78,7 +84,7 @@ DIR = "test/assets/typescript_examples/"
     ],
 )
 def test_get_exported_class(source, target):
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     print("target")
     print(target)
     assert jp.schema['classes'] == target
@@ -112,7 +118,7 @@ def test_get_exported_class(source, target):
     ],
 )
 def test_get_signatures(source, target):
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     signatures = []
     for method in jp.schema['methods']:
         signatures.append(method['signature'])

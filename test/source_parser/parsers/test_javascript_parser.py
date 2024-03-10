@@ -1,12 +1,20 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=line-too-long
+from pprint import pprint
 import pytest
 from source_parser.parsers import JavascriptParser
 from source_parser.parsers.language_parser import children_of_type
-from pprint import pprint
+
 
 DIR = "test/assets/javascript_examples/"
+
+
+def create_javascript_parser(source):
+    with open(source, 'r', encoding='utf-8') as file:
+        jp = JavascriptParser(file.read())
+    return jp
 
 
 @pytest.mark.parametrize(
@@ -44,7 +52,7 @@ DIR = "test/assets/javascript_examples/"
     ],
 )
 def test_file_docstring(source, target):
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     file_docstring = jp.file_docstring
     print("file_docstring")
     print(file_docstring)
@@ -71,7 +79,7 @@ def test_file_docstring(source, target):
 )
 def test_function_docstring(source, target):
     function_docstring_list = []
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     function_nodes = children_of_type(jp.tree.root_node, "function_declaration")
     for func in function_nodes:
         function_docstring_list.append(jp.get_docstring(jp.tree.root_node, func))
@@ -103,7 +111,7 @@ def test_function_docstring(source, target):
 )
 def test_function_names(source, target):
     function_names = []
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     function_nodes = children_of_type(jp.tree.root_node, "function_declaration")
     for func in function_nodes:
         function_names.append(
@@ -158,11 +166,11 @@ def test_function_names(source, target):
 )
 def test_function_signature(source, target):
     function_signatures = []
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     function_nodes = children_of_type(jp.tree.root_node, "function_declaration")
     for func in function_nodes:
         function_signatures.append(
-            jp.get_signature_default_args(func, type_sig="function")[0]
+            jp.get_signature_default_args(func)[0]
         )
     print(function_signatures)
     print("target")
@@ -217,7 +225,7 @@ def test_function_signature(source, target):
 )
 def test_function_original_string(source, target):
     func_original = []
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     function_nodes = children_of_type(jp.tree.root_node, "function_declaration")
     for func in function_nodes:
         func_original.append(jp.span_select(func, indent=False))
@@ -251,7 +259,7 @@ def test_function_original_string(source, target):
 )
 def test_method_docstring(source, target):
     method_docstring = []
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     class_nodes = children_of_type(jp.tree.root_node, "class_declaration")
     for class_node in class_nodes:
         class_method_nodes = []
@@ -274,12 +282,12 @@ def test_method_docstring(source, target):
     "source, target", [("test/assets/javascript_examples/example3.js", [{'a': '', 'c': '', 'b': '1'}])]
 )
 def test_func_default(source, target):
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     list_of_default_dicts = []
     function_nodes = children_of_type(jp.tree.root_node, "function_declaration")
     for function in function_nodes:
         list_of_default_dicts.append(
-            jp.get_signature_default_args(function, type_sig="function")[1]
+            jp.get_signature_default_args(function)[1]
         )
     print(list_of_default_dicts)
     print("target")
@@ -318,7 +326,7 @@ def test_func_default(source, target):
     ],
 )
 def test_class_attributes(source, target):
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     class_nodes = children_of_type(jp.tree.root_node, "class_declaration")
     results_holder = []
     for class_node in class_nodes:
@@ -364,7 +372,7 @@ def test_class_attributes(source, target):
     ],
 )
 def test_file_context(source, target):
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     file_context = jp.file_context
     print("file_context")
     print(file_context)
@@ -375,8 +383,7 @@ def test_file_context(source, target):
 
 def test_schema_method():
     source = DIR + "example1.js"
-    with open(source, "r") as f:
-        jp = JavascriptParser(f.read())
+    jp = create_javascript_parser(source)
 
     m1 = jp.schema["methods"][0]
 
@@ -433,10 +440,9 @@ Convert the given value in bytes into a string or parse to string to an integer 
     assert m1["end_point"] == (63, 1)
 
     source = DIR + "functions.js"
-    with open(source, "r") as f:
-        jp = JavascriptParser(f.read())
+    jp = create_javascript_parser(source)
 
-    m1, m2, m3, m4, m5, m6, m7, m8, m9 = jp.schema["methods"]
+    m1, m2, m3, m4, m5, m6, _, _, _ = jp.schema["methods"]
 
     assert (
         m2["original_string"]
@@ -620,7 +626,7 @@ Convert the given value in bytes into a string or parse to string to an integer 
     ],
 )
 def test_schema_class(source, target):
-    jp = JavascriptParser(open(source).read())
+    jp = create_javascript_parser(source)
     class_info = jp.schema["classes"]
     pprint(class_info)
     print("target")
@@ -630,8 +636,7 @@ def test_schema_class(source, target):
 
 def test_other_class():
     source = DIR + "OtherClass.js"
-    with open(source, "r") as f:
-        jp = JavascriptParser(f.read())
+    jp = create_javascript_parser(source)
 
     c1 = jp.schema["classes"][0]
     assert (

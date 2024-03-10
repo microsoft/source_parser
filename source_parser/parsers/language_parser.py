@@ -57,8 +57,7 @@ def previous_sibling(node, parent_node):
             break
     if previous_sibling_index >= 0:
         return parent_node.children[previous_sibling_index]
-    else:
-        return None
+    return None
 
 
 def node_parent(tree, node):

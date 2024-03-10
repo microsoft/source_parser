@@ -4,5 +4,5 @@ max-args=10
 max-locals=30
 max-branches=24
 max-statements=100
-ignore=test/assets
+ignore-paths=test/assets
 disable=missing-docstring,broad-exception-caught,too-few-public-methods,protected-access

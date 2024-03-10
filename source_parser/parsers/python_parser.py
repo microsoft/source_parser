@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=duplicate-code
 """
 python_parser.py
 
@@ -80,6 +81,7 @@ class PythonParser(LanguageParser):
             if node.type == "decorated_definition":
                 if node.children[-1].type == defn:
                     return node
+            return None
 
         return distinguish_decorated
 

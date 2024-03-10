@@ -17,14 +17,13 @@ To contribute, branch source-parser and file a [pull request](https://github.com
       ```bash
       git submodule update --init --recursive
       ```
-  - Build and deploy with following commands:
+  - Build and deploy locally with following commands:
       ```bash
             pip uninstall source_parser
-            python setup.py sdist
-            pip install dist/source_parser-<version>.tar.gz
+            python setup.py bdist_wheel
+            pip install dist/source_parser-<version>-py3-none-any.whl
       ```
-  - Excecute `pytest test/` in the root directory and ensure
-     all the tests pass
+  - Excecute `pytest test/` in the root directory and ensure all the tests pass
   - Bump the version number in the `source_parser/_version.py` file
      following semantic versioning
   - If you modify the schema, try to modify it in a way which does not
@@ -39,16 +38,15 @@ In VSCode, you may install the following extensions to support linting and forma
 - [Flake8](https://marketplace.visualstudio.com/items?itemName=ms-python.flake8)
 - [autopep8](https://marketplace.visualstudio.com/items?itemName=ms-python.autopep8)
 
-Linting is enabled and configured in [settings.json](./.vscode/settings.json) using `Pylint` and `Flake8`, as well as auto-formatting on save using `autopep8`.
+Linting is enabled and configured in [settings.json](./.vscode/settings.json) using `Pylint`, as well as auto-formatting on save using `autopep8`.
 
 You may disable linting rules for specific lines/files in cases where the linting suggestion doesn't make sense.
 
 You may also run linting at the repo root directory (which are the same commands in PR validation):
 
 ```
-pip install pylint flake8
+pip install pylint
 pylint ./ --recursive=y
-flake8 ./
 ```
 
 ## Reporting Issues

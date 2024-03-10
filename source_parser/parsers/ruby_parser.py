@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=duplicate-code
 from textwrap import dedent
 
 from source_parser.parsers.language_parser import (
@@ -45,7 +46,7 @@ class RubyParser(LanguageParser):
         self.file_bytes = file_contents.encode("utf-8")
         self.tree = self.parser.parse(self.file_bytes)
         # key is tuple(start_byte, end_byte)
-        self._node2namespace = dict()
+        self._node2namespace = {}
         self._traverse_namespace(self.tree.root_node)
 
     @classmethod
@@ -102,7 +103,7 @@ class RubyParser(LanguageParser):
                 sub_nodes = [
                     sub_child
                     for sub_child in child.children
-                    if sub_child.type == "class" or sub_child.type == "method"
+                    if sub_child.type in ("class", "method")
                 ]
 
                 if len(sub_nodes) > 0:
@@ -134,15 +135,12 @@ class RubyParser(LanguageParser):
             pass
         return namespace_nodes
 
-    @property
-    def include_patterns(self):
-        return self._include_patterns
-
     @staticmethod
     def _check_node_def(defn):
         def check_node_def(node):
             if node.type == defn:
                 return node
+            return None
 
         return check_node_def
 
@@ -395,10 +393,7 @@ class RubyParser(LanguageParser):
         in_class_methods = []
         for c in self.class_nodes:
             class_result = self.parse_class_node(c)
-            full_class_name = "{}{}".format(
-                class_result["attributes"]["namespace_prefix"],
-                class_result["name"]
-            )
+            full_class_name = f"{class_result['attributes']['namespace_prefix']}{class_result['name']}"
             if full_class_name not in class_names:
                 class_names.append(full_class_name)
                 classes.append(class_result)

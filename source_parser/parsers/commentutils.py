@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=dangerous-default-value
+
 import re
 
 LEADING_HASHTAG_COMMENT_PLAINTEXT_REGEX = re.compile(

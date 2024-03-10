@@ -7,6 +7,12 @@ from source_parser.parsers import CppParser
 DIR = "test/assets/cpp_examples/"
 
 
+def create_cpp_parser(source):
+    with open(source, 'r', encoding='utf-8') as file:
+        cp = CppParser(file.read())
+    return cp
+
+
 @pytest.mark.parametrize(
     "source, target",
     [
@@ -27,9 +33,8 @@ file, You can obtain one at http://mozilla.org/MPL/2.0/.""",
     ],
 )
 def test_file_docstring(source, target):
-    with open(source, "r") as f:
-        cp = CppParser(f.read())
-        assert cp.schema["file_docstring"] == target
+    cp = create_cpp_parser(source)
+    assert cp.schema["file_docstring"] == target
 
 
 @pytest.mark.parametrize(
@@ -53,22 +58,20 @@ def test_file_docstring(source, target):
     ],
 )
 def test_context(source, target):
-    with open(source, "r") as f:
-        cp = CppParser(f.read())
-        assert cp.schema["contexts"] == target
+    cp = create_cpp_parser(source)
+    assert cp.schema["contexts"] == target
 
 
 def test_classes():
     source = DIR + "ComplexClass.cpp"
-    with open(source, "r") as f:
-        cp = CppParser(f.read())
+    cp = create_cpp_parser(source)
 
-        classes = cp.schema['classes']
-        assert len(classes) == 1
+    classes = cp.schema['classes']
+    assert len(classes) == 1
 
-        cl = classes[0]
+    cl = classes[0]
 
-        assert cl["original_string"] == """class FirstClass{
+    assert cl["original_string"] == """class FirstClass{
 public:
     vector<int> x;
     // a variable
@@ -142,85 +145,82 @@ private:
 
 def test_methods():
     source = DIR + "InNamespaces.cpp"
-    with open(source, "r") as f:
-        cp = CppParser(f.read())
+    cp = create_cpp_parser(source)
 
-        m1, m2, m3 = cp.schema['methods']
+    m1, m2, m3 = cp.schema['methods']
 
-        assert m1["original_string"] == """int main(){
+    assert m1["original_string"] == """int main(){
     return 0;
 }"""
-        assert m1["signature"] == "int main()"
-        assert m1["body"] == """{
+    assert m1["signature"] == "int main()"
+    assert m1["body"] == """{
     return 0;
 }"""
-        assert m1["name"] == "main"
-        assert m1["attributes"]["return_type"] == "int"
-        assert m1["attributes"]["namespace_prefix"] == ""
-        assert m1["start_point"] == (41, 0)
-        assert m1["end_point"] == (43, 1)
+    assert m1["name"] == "main"
+    assert m1["attributes"]["return_type"] == "int"
+    assert m1["attributes"]["namespace_prefix"] == ""
+    assert m1["start_point"] == (41, 0)
+    assert m1["end_point"] == (43, 1)
 
-        assert m2["original_string"] == """bool cmp(const int& a, const int& b) const {
+    assert m2["original_string"] == """bool cmp(const int& a, const int& b) const {
         return a < b;
     }"""
-        assert m2["signature"] == "bool cmp(const int& a, const int& b) const"
-        assert m2["body"] == """{
+    assert m2["signature"] == "bool cmp(const int& a, const int& b) const"
+    assert m2["body"] == """{
         return a < b;
     }"""
-        assert m2["name"] == "cmp"
-        assert m2["docstring"] == "First cmp"
-        assert m2["attributes"]["return_type"] == "bool"
-        assert m2["attributes"]["namespace_prefix"] == "first_namespace::"
-        assert m2["attributes"]["annotations"] == ["const"]
-        assert m2["start_point"] == (11, 4)
-        assert m2["end_point"] == (13, 5)
+    assert m2["name"] == "cmp"
+    assert m2["docstring"] == "First cmp"
+    assert m2["attributes"]["return_type"] == "bool"
+    assert m2["attributes"]["namespace_prefix"] == "first_namespace::"
+    assert m2["attributes"]["annotations"] == ["const"]
+    assert m2["start_point"] == (11, 4)
+    assert m2["end_point"] == (13, 5)
 
-        assert m3["original_string"] == """auto cmp(const int& a, const int& b){
+    assert m3["original_string"] == """auto cmp(const int& a, const int& b){
             return a < b;
         }"""
-        assert m3["signature"] == "auto cmp(const int& a, const int& b)"
-        assert m3["body"] == """{
+    assert m3["signature"] == "auto cmp(const int& a, const int& b)"
+    assert m3["body"] == """{
             return a < b;
         }"""
-        assert m3["name"] == "cmp"
-        assert m3["docstring"] == "Second cmp"
-        assert m3["attributes"]["return_type"] == "auto"
-        assert m3["attributes"]["namespace_prefix"] == "first_namespace::second_namespace::"
-        assert m3["attributes"]["annotations"] == []
-        assert m3["start_point"] == (35, 8)
-        assert m3["end_point"] == (37, 9)
+    assert m3["name"] == "cmp"
+    assert m3["docstring"] == "Second cmp"
+    assert m3["attributes"]["return_type"] == "auto"
+    assert m3["attributes"]["namespace_prefix"] == "first_namespace::second_namespace::"
+    assert m3["attributes"]["annotations"] == []
+    assert m3["start_point"] == (35, 8)
+    assert m3["end_point"] == (37, 9)
 
 
 def test_wrong_examples():
     source = DIR + "LongList.cpp"
-    with open(source, "r") as f:
-        cp = CppParser(f.read())
+    cp = create_cpp_parser(source)
 
-        m = cp.schema['methods'][0]
-        assert m["syntax_pass"] == False
+    m = cp.schema['methods'][0]
+    assert m["syntax_pass"] is False
 
 
 def test_constructor_function():
     source = DIR + "ConstructorFunction.cpp"
-    with open(source, "r") as f:
-        cp = CppParser(f.read())
+    cp = create_cpp_parser(source)
 
-        m1, m2 = cp.schema["methods"]
+    m1, m2 = cp.schema["methods"]
 
-        assert m1["original_string"] == """ModelConsumer::ModelConsumer(llvm::StringMap<Stmt *> &Bodies)
+    assert m1["original_string"] == """ModelConsumer::ModelConsumer(llvm::StringMap<Stmt *> &Bodies)
     : Bodies(Bodies) {}"""
-        assert m1["body"] == "{}"
-        assert m1["name"] == "ModelConsumer::ModelConsumer"
-        assert m1["signature"] == """ModelConsumer::ModelConsumer(llvm::StringMap<Stmt *> &Bodies)
+    assert m1["body"] == "{}"
+    assert m1["name"] == "ModelConsumer::ModelConsumer"
+    assert m1["signature"] == """ModelConsumer::ModelConsumer(llvm::StringMap<Stmt *> &Bodies)
     : Bodies(Bodies)"""
-        assert m1["docstring"] == "It's a constructor"
-        assert m1["attributes"]["return_type"] == ""
-        assert m1["attributes"]["annotations"] == []
+    assert m1["docstring"] == "It's a constructor"
+    assert m1["attributes"]["return_type"] == ""
+    assert m1["attributes"]["annotations"] == []
 
-        assert m2["original_string"] == """ModelConsumer::~ModelConsumer(void) {}"""
-        assert m2["body"] == "{}"
-        assert m2["name"] == "ModelConsumer::~ModelConsumer"
-        assert m2["signature"] == """ModelConsumer::~ModelConsumer(void)"""
-        assert m2["docstring"] == "It's a deconstructor"
-        assert m2["attributes"]["return_type"] == ""
-        assert m2["attributes"]["annotations"] == []
+    assert m2["original_string"] == """ModelConsumer::~ModelConsumer(void) {}"""
+    assert m2["body"] == "{}"
+    assert m2["name"] == "ModelConsumer::~ModelConsumer"
+    assert m2["signature"] == """ModelConsumer::~ModelConsumer(void)"""
+    assert m2["docstring"] == "It's a deconstructor"
+    assert m2["attributes"]["return_type"] == ""
+    assert m2["attributes"]["annotations"] == []

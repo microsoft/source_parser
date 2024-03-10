@@ -1,5 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
+
+# pylint: disable=deprecated-module
 """
 This is a set of tools for processing python source code within a python script
 """
@@ -15,7 +17,7 @@ from source_parser.utils import time_limit
 
 
 _ALL_FIXES = [
-    "lib2to3.fixes.fix_{}".format(l)
+    f"lib2to3.fixes.fix_{l}"
     for l in lib2to3.refactor.get_all_fix_names("lib2to3.fixes")
 ]
 _TOOL = lib2to3.refactor.RefactoringTool(_ALL_FIXES)
@@ -95,9 +97,7 @@ def check_python3_attempt_fix(source_string, timeout=25):
                         source_string, fixes.pop(s_err.__class__), timeout
                     )
                 continue
-
-            else:
-                raise s_err
+            raise s_err
     return source_string
 
 

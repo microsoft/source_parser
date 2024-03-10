@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
+# pylint: disable=duplicate-code
 """
 cpp_parser.py
 
@@ -54,7 +55,6 @@ from source_parser.parsers.language_parser import (
     has_correct_syntax,
     traverse_type,
     children_of_type,
-    children_not_of_type,
     previous_sibling,
 )
 from source_parser.parsers.commentutils import strip_c_style_comment_delimiters
@@ -76,34 +76,18 @@ class CppParser(LanguageParser):
     _namespace_types = ("namespace_definition",)
     _include_patterns = "*?.cpp"
 
-    def __init__(self, file_contents=None, parser=None, remove_comments=False):
-        """
-        Initialize LanguageParser
-
-        Parameters
-        ----------
-        file_contents : str
-            string containing a source code file contents
-        parser : tree_sitter.parser (optional)
-            optional pre-initialized parser
-        remove_comments: True/False
-            whether to strip comments from the source file before structural
-            parsing. Default is False
-        """
-        super().__init__(file_contents, parser, remove_comments)
-
     def update(self, file_contents):
         """Update the file being parsed"""
         self.file_bytes = file_contents.encode("utf-8")
         self.tree = self.parser.parse(self.file_bytes)
 
         # key is tuple(start_byte, end_byte)
-        self._node2namespace = dict()
-        self._node2parent = dict()
+        self._node2namespace = {}
+        self._node2parent = {}
         self._traverse_namespace(self.tree.root_node)
 
     @classmethod
-    def get_lang(self):
+    def get_lang(cls):
         return "cpp"
 
     @property
@@ -137,16 +121,15 @@ class CppParser(LanguageParser):
         If the previous sibling is not a docstring, returns None.
         """
 
-        if parent_node == None:
+        if parent_node is None:
             parent_node = self.tree.root_node
 
         prev_sib = previous_sibling(node, parent_node)
         if prev_sib is None:
             return None
-        elif prev_sib.type in self._docstring_types:
+        if prev_sib.type in self._docstring_types:
             return prev_sib
-        else:
-            return None
+        return None
 
     @property
     def file_docstring(self):
@@ -241,6 +224,7 @@ class CppParser(LanguageParser):
             if child.type == "compound_statement":
                 return self.span_select(*nodes, indent=False) if len(nodes) > 0 else ""
             nodes.append(child)
+        return self.span_select(*nodes, indent=False) if len(nodes) > 0 else ""
 
     def _parse_method_node(self, method_node, parent_node=None):
         result = {
