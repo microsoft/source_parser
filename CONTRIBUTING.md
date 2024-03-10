@@ -19,6 +19,8 @@ To contribute, branch source-parser and file a [pull request](https://github.com
       ```
   - Build and deploy locally with following commands:
       ```bash
+            python -m pip install --upgrade pip
+            python -m pip install pylint pytest wheel
             pip uninstall source_parser
             python setup.py bdist_wheel
             pip install dist/source_parser-<version>-py3-none-any.whl
