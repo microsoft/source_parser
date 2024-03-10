@@ -30,6 +30,17 @@ To contribute, branch source-parser and file a [pull request](https://github.com
      break backwards compatibility and be sure to update the README.md
      description of the schema.
 
+### Adding new language support
+
+Examine the parsers in the `source_parser/parsers` directory
+and try to work by analogy in extracting the features of a new source code language. Be sure to
+adhere to the schema!
+
+
+### Development Tips
+- Tree playground is useful for development and debugging: <https://tree-sitter.github.io/tree-sitter/playground>.
+- ```pytest -s``` to show ```print``` statements during tests.
+
 ### Linting and formatting in VSCode
 
 In VSCode, you may install the following extensions to support linting and formatting:
