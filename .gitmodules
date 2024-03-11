@@ -1,0 +1,51 @@
+[submodule "source_parser/tree_sitter/assets/tree-sitter-bash"]
+	path = source_parser/tree_sitter/assets/tree-sitter-bash
+	url = https://github.com/tree-sitter/tree-sitter-bash
+[submodule "source_parser/tree_sitter/assets/tree-sitter-c"]
+	path = source_parser/tree_sitter/assets/tree-sitter-c
+	url = https://github.com/tree-sitter/tree-sitter-c
+[submodule "source_parser/tree_sitter/assets/tree-sitter-cpp"]
+	path = source_parser/tree_sitter/assets/tree-sitter-cpp
+	url = https://github.com/tree-sitter/tree-sitter-cpp
+[submodule "source_parser/tree_sitter/assets/tree-sitter-css"]
+	path = source_parser/tree_sitter/assets/tree-sitter-css
+	url = https://github.com/tree-sitter/tree-sitter-css
+[submodule "source_parser/tree_sitter/assets/tree-sitter-go"]
+	path = source_parser/tree_sitter/assets/tree-sitter-go
+	url = https://github.com/tree-sitter/tree-sitter-go
+[submodule "source_parser/tree_sitter/assets/tree-sitter-html"]
+	path = source_parser/tree_sitter/assets/tree-sitter-html
+	url = https://github.com/tree-sitter/tree-sitter-html
+[submodule "source_parser/tree_sitter/assets/tree-sitter-java"]
+	path = source_parser/tree_sitter/assets/tree-sitter-java
+	url = https://github.com/tree-sitter/tree-sitter-java
+[submodule "source_parser/tree_sitter/assets/tree-sitter-javascript"]
+	path = source_parser/tree_sitter/assets/tree-sitter-javascript
+	url = https://github.com/tree-sitter/tree-sitter-javascript
+[submodule "source_parser/tree_sitter/assets/tree-sitter-json"]
+	path = source_parser/tree_sitter/assets/tree-sitter-json
+	url = https://github.com/tree-sitter/tree-sitter-json
+[submodule "source_parser/tree_sitter/assets/tree-sitter-php"]
+	path = source_parser/tree_sitter/assets/tree-sitter-php
+	url = https://github.com/tree-sitter/tree-sitter-php
+[submodule "source_parser/tree_sitter/assets/tree-sitter-python"]
+	path = source_parser/tree_sitter/assets/tree-sitter-python
+	url = https://github.com/tree-sitter/tree-sitter-python
+[submodule "source_parser/tree_sitter/assets/tree-sitter-regex"]
+	path = source_parser/tree_sitter/assets/tree-sitter-regex
+	url = https://github.com/tree-sitter/tree-sitter-regex
+[submodule "source_parser/tree_sitter/assets/tree-sitter-ruby"]
+	path = source_parser/tree_sitter/assets/tree-sitter-ruby
+	url = https://github.com/tree-sitter/tree-sitter-ruby
+[submodule "source_parser/tree_sitter/assets/tree-sitter-rust"]
+	path = source_parser/tree_sitter/assets/tree-sitter-rust
+	url = https://github.com/tree-sitter/tree-sitter-rust
+[submodule "source_parser/tree_sitter/assets/tree-sitter-typescript"]
+	path = source_parser/tree_sitter/assets/tree-sitter-typescript
+	url = https://github.com/tree-sitter/tree-sitter-typescript
+[submodule "source_parser/tree_sitter/assets/tree-sitter-csharp"]
+	path = source_parser/tree_sitter/assets/tree-sitter-csharp
+	url = https://github.com/tree-sitter/tree-sitter-c-sharp
+[submodule "source_parser/tree_sitter/assets/tree-sitter-lua"]
+	path = source_parser/tree_sitter/assets/tree-sitter-lua
+	url = https://github.com/Azganoth/tree-sitter-lua

@@ -1,0 +1,1 @@
+class Animal{constructor(s){this.name=s}speak(){console.log(`${this.name} makes a noise.`)}}class Dog extends Animal{constructor(s){super(s)}speak(){console.log(`${this.name} barks.`)}}let d=new Dog("Mitzie");d.speak();
