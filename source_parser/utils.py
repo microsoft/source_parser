@@ -32,10 +32,10 @@ def static_hash(str_tuple):
     hash a tuple of bytes or objects serializable with str, get consistent results across runs
     without the hack of turning off the python hash seed
     """
-    md5 = hashlib.md5()
+    sha256 = hashlib.sha256()
     for strn in str_tuple:
-        md5.update(str(strn).encode("utf-8"))
-    return md5.hexdigest()
+        sha256.update(str(strn).encode("utf-8"))
+    return sha256.hexdigest()
 
 
 def tokenize(file_bytes, node, whitespace=True):

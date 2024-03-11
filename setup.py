@@ -26,26 +26,28 @@ with open(VERSIONFILE, "rt", encoding="utf-8") as f:
     VERSTR = main_ns['__version__']
 
 setup(
-    name="source_parser",  # Required
+    name="source_parser",
 
-    version=VERSTR,  # Required
+    version=VERSTR,
 
-    description="Parsers and tools for extracting method/class-level features from source code",  # Optional
-    long_description=long_description,  # Optional
-    long_description_content_type="text/markdown",  # Optional (see note above)
-    url="https://github.com/microsoft/source_parser",  # Optional
-    author="Microsoft Corporation",  # Optional
-    author_email="vsdatascience@microsoft.com",  # Optional
-    classifiers=[  # Optional
+    description="Parsers and tools for extracting method/class-level features from source code",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/microsoft/source_parser",
+    author="Microsoft Corporation",
+    author_email="vsdatascience@microsoft.com",
+    classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
-    keywords="tree_sitter universal-ast codesearchnet method-docstring",  # Optional
-    packages=find_packages(exclude=["source_parser/tree_sitter/assets", "test"]),  # Required
+    keywords="tree_sitter universal-ast codesearchnet method-docstring",
+    packages=find_packages(
+        exclude=["source_parser/tree_sitter/assets", "test"]),
     python_requires=">=3.8",
     include_package_data=True,
     install_requires=[
