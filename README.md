@@ -98,7 +98,7 @@ from source_parser import load_zip_json
 all_data = list(load_zip_json('file_saved_from_repocontext.lz4'))
 ```
 
-# Data Schema
+### Data Schema
 
 This is a description of the JSON schema into which `source_parser` will
 transform source code files, for use in method and class-level code-natural
