@@ -154,8 +154,7 @@ _NOTE: See individual language parsers in `source_parser/parsers` for the langau
 
             'end_point': (end_line_number, end_column),
 
-            'signature':
-                'string corresponding to definition, name, arguments of method',
+            'signature': 'string corresponding to definition, name, arguments of method',
 
             'name': 'name of method',
 
@@ -163,8 +162,7 @@ _NOTE: See individual language parsers in `source_parser/parsers` for the langau
 
             'body': 'verbatim code body',
 
-            'original_string_normed':
-                'code of whole method with string-literal, numeral normalization',
+            'original_string_normed': 'code of whole method with string-literal, numeral normalization',
 
             'signature_normed': 'signature with string-literals/numerals normalized',
 
@@ -176,9 +174,9 @@ _NOTE: See individual language parsers in `source_parser/parsers` for the langau
 
             'attributes': [
             	'language_specific_keys': 'language_specific_values',
-                # e.g.
                 'decorators': ['@wrap', '@abstractmethod'],
-                ],
+                ...
+            ],
             ...
         },
         ...
