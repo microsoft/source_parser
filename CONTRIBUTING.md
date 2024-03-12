@@ -48,7 +48,6 @@ adhere to the schema!
 In VSCode, you may install the following extensions to support linting and formatting:
 
 - [Pylint](https://marketplace.visualstudio.com/items?itemName=ms-python.pylint)
-- [Flake8](https://marketplace.visualstudio.com/items?itemName=ms-python.flake8)
 - [autopep8](https://marketplace.visualstudio.com/items?itemName=ms-python.autopep8)
 
 Linting is enabled and configured in [settings.json](./.vscode/settings.json) using `Pylint`, as well as auto-formatting on save using `autopep8`.

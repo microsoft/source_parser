@@ -84,7 +84,8 @@ def notify(observers, task, timeout=20):
             LOGGER.info("Quitting...")
             raise
         except Exception as err:
-            output["error_msgs"].append(f"Processing url {task['url']} yielded {err}")
+            output["error_msgs"].append(
+                f"Processing url {task['url']} yielded {err}")
 
     return output
 
@@ -103,7 +104,8 @@ class Deduplicate:
                 unique_results = []
                 for result in results:
 
-                    file_hash = str(result["file_hash"])  # copy to prevent memory pinning
+                    # copy to prevent memory pinning
+                    file_hash = str(result["file_hash"])
                     if file_hash in self.seenfiles:
                         self.seenfiles[file_hash] += 1
                         output["statistics"]["duplicate_items"] += 1
@@ -205,7 +207,8 @@ class PipelineDispatch:
             self.dedupe_pool[1:] if self.num_dedupe > 1 else self.dedupe_pool
         )
 
-        processor_args = (self.obs_id, len(tasks), kwargs.get("compression", "lz4"))
+        processor_args = (self.obs_id, len(tasks),
+                          kwargs.get("compression", "lz4"))
         if num_save_files > 1:
             self.processor_pool = [
                 ProcessResults.remote(*processor_args, part=i)

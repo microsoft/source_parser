@@ -34,7 +34,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/microsoft/source_parser",
-    author="Microsoft Corporation",
+    author="Microsoft",
     author_email="vsdatascience@microsoft.com",
     classifiers=[
         "Development Status :: 4 - Beta",
