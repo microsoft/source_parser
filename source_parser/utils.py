@@ -5,6 +5,7 @@ import string
 import signal
 import hashlib
 import logging
+from collections import deque
 from contextlib import contextmanager
 
 LOGGER = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ def static_hash(str_tuple):
 
 def tokenize(file_bytes, node, whitespace=True):
     """
-    Tokenize the source file_contents represented by node
+    Tokenize the source file_contents represented by node without modifying the tree
     and optionally include whitespace to the right of each token
 
     Parameters
@@ -63,10 +64,11 @@ def tokenize(file_bytes, node, whitespace=True):
 
     n_bytes = len(file_bytes)
     tokens, types = [], []
-    nodes = node.children
+    nodes = deque(node.children)
     while nodes:
-        nxt = nodes.pop(0)
-        if not nxt.children or (
+        nxt = nodes.popleft()
+        children = nxt.children
+        if not children or (
             "string" in str(nxt.type)
             and str(nxt.type) not in compound_lits
             or "char" in str(nxt.type)
@@ -86,7 +88,7 @@ def tokenize(file_bytes, node, whitespace=True):
             tokens.append(tok)
             types.append(nxt.type)
             continue
-        nodes = nxt.children + nodes
+        nodes.extendleft(reversed(children))
 
     return tokens, types
 

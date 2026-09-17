@@ -54,7 +54,7 @@ setup(
         "autopep8>=1.4.4",
         "lz4>=3.1.0",
         "networkx>=2.5.1",
-        "datasketch>=1.5.3",
+        "datasketch>=1.5.3,<2",
         "tree-sitter>=0.20.1,<0.22",
         "ray>=1.0.0",
         "psutil>=5.6.3",

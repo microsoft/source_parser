@@ -98,6 +98,28 @@ from source_parser import load_zip_json
 all_data = list(load_zip_json('file_saved_from_repocontext.lz4'))
 ```
 
+### Deduplicating code
+
+`CodeDeduper` detects near-duplicate code using fingerprints of identifiers and
+literals. The package uses `datasketch` 1.x to preserve compatibility with
+existing fingerprints and duplicate-detection behavior. When adding a code
+string immediately after querying it, use `new_hash=False` to reuse those
+fingerprints without parsing and hashing the same code again:
+
+```python
+from source_parser.deduper import CodeDeduper
+
+deduper = CodeDeduper(language="python")
+unique_code = []
+for code in code_strings:
+    if not deduper.query(code):
+        deduper.add(code, new_hash=False)
+        unique_code.append(code)
+```
+
+Only use `new_hash=False` when the most recent query was for the same code
+string. Otherwise, use `add(code)` to compute fresh fingerprints.
+
 ### Data Schema
 
 This is a description of the JSON schema into which `source_parser` will
@@ -234,4 +256,3 @@ trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
-
