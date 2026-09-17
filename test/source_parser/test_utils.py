@@ -34,8 +34,7 @@ from source_parser.utils import tokenize
     ],
 )
 def test_tokenize(source, expected_tokens, expected_types, whitespace):
-    parser = Parser()
-    parser.set_language(get_language("python"))
+    parser = Parser(get_language("python"))
     file_bytes = source.encode("utf-8")
     root = parser.parse(file_bytes).root_node
 
@@ -49,8 +48,7 @@ def test_tokenize(source, expected_tokens, expected_types, whitespace):
 
 @pytest.mark.parametrize("whitespace", [True, False])
 def test_tokenize_subtree_preserves_indentation(whitespace):
-    parser = Parser()
-    parser.set_language(get_language("python"))
+    parser = Parser(get_language("python"))
     file_bytes = b"def f():\n    return 'ok'\n"
     root = parser.parse(file_bytes).root_node
     body = root.children[0].child_by_field_name("body")
@@ -63,8 +61,7 @@ def test_tokenize_subtree_preserves_indentation(whitespace):
 
 
 def test_tokenize_does_not_modify_tree_children():
-    parser = Parser()
-    parser.set_language(get_language("python"))
+    parser = Parser(get_language("python"))
     file_bytes = b"first = 1\nsecond = 2\n"
     root = parser.parse(file_bytes).root_node
     children = list(root.children)
@@ -76,8 +73,7 @@ def test_tokenize_does_not_modify_tree_children():
 
 
 def test_tokenize_wide_tree_preserves_source_order():
-    parser = Parser()
-    parser.set_language(get_language("python"))
+    parser = Parser(get_language("python"))
     source = "".join(f"value_{index} = {index}\n" for index in range(2000))
     file_bytes = source.encode("utf-8")
     root = parser.parse(file_bytes).root_node

@@ -1,0 +1,19 @@
+{
+    "bash": "tree_sitter_bash",
+    "c": "tree_sitter_c",
+    "cpp": "tree_sitter_cpp",
+    "csharp": "tree_sitter_c_sharp",
+    "css": "tree_sitter_css",
+    "go": "tree_sitter_go",
+    "html": "tree_sitter_html",
+    "java": "tree_sitter_java",
+    "javascript": "tree_sitter_javascript",
+    "json": "tree_sitter_json",
+    "lua": "tree_sitter_lua",
+    "php": "tree_sitter_php",
+    "python": "tree_sitter_python",
+    "regex": "tree_sitter_regex",
+    "ruby": "tree_sitter_ruby",
+    "rust": "tree_sitter_rust",
+    "typescript": "tree_sitter_typescript"
+}

@@ -12,8 +12,7 @@ from source_parser.parsers.python_parser import PythonParser
 from source_parser.tree_sitter import normalize
 from source_parser.tree_sitter.config import get_language, LanguageId
 
-PARSER = Parser()
-PARSER.set_language(get_language(LanguageId("python")))
+PARSER = Parser(get_language(LanguageId("python")))
 
 
 def schematize_file(file_contents, parser=PARSER):

@@ -1,4 +1,4 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-__version__ = "2.0.0"
+"""Native bindings for the pinned Tree-sitter grammar snapshots."""

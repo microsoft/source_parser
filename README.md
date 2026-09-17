@@ -20,6 +20,28 @@ description of the structural annotated schema.
 
 __NOTE__: this tool is only supported on a **NIX-style OS (Linux, MacOS, FreeBSD, etc)**
 
+Source Parser 2.x supports **Python 3.11-3.14** and **Tree-sitter 0.26.x**
+(`tree-sitter>=0.26,<0.27`). Python 3.10 and older and the legacy Tree-sitter
+bindings are no longer supported.
+
+Grammar snapshots are pinned in the repository and compiled into native
+bindings when the package is built. Installing a compatible wheel requires no
+C/C++ compiler or writable Tree-sitter grammar cache. Building from a source distribution
+requires a C/C++ toolchain and Python development headers; see
+[CONTRIBUTING.md](CONTRIBUTING.md) for checkout builds.
+
+### Migrating from 1.x
+
+The parser schema and pinned grammar snapshots are retained. Supported Python
+**runtime** versions do not imply that every new Python syntax feature is
+recognized by the pinned Python grammar. Python 2 source conversion remains
+available through Fissix instead of the removed standard-library `lib2to3`.
+
+`get_language("python")` and `get_language(LanguageId.PYTHON)` continue to work.
+Runtime `build_library()` and the `force_build` argument to `get_language()`
+have been removed; rebuild/reinstall the package after changing a grammar.
+Custom Tree-sitter parsers should use `Parser(get_language("python"))` or assign
+`parser.language`, rather than calling the removed `parser.set_language()`.
 
 ### PyPI installation
 

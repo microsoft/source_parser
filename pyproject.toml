@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+build = "cp311-*"
+skip = "*-musllinux_*"
+test-command = "python -c \"from tree_sitter import Parser; from source_parser.tree_sitter import LanguageId, get_language; [Parser(get_language(lang)).parse(b'') for lang in LanguageId]\""
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]

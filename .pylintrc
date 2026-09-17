@@ -1,8 +1,9 @@
 [MAIN]
 max-line-length=150
 max-args=10
+max-positional-arguments=10
 max-locals=30
 max-branches=24
 max-statements=100
-ignore-paths=test/assets,build
+ignore-paths=test/assets,source_parser/tree_sitter/assets,build
 disable=missing-docstring,broad-exception-caught,too-few-public-methods,protected-access

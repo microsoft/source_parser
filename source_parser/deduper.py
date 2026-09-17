@@ -214,8 +214,7 @@ class CodeDeduper:
         self.lsh_mset = MinHashLSH(
             threshold=threshold_mset, num_perm=num_perm, weights=weights
         )
-        self.parser = Parser()
-        self.parser.set_language(get_language(language.lower()))
+        self.parser = Parser(get_language(language.lower()))
         self.literals = [
             item
             for sublist in lang2lits[LanguageId[language.upper()]]

@@ -99,9 +99,7 @@ def has_correct_syntax(node):
     correct : True/False
         whether the node contains correct syntax
     """
-    if "ERROR" in node.sexp() or "MISSING" in node.sexp():
-        return False
-    return True
+    return not (node.has_error or node.is_missing)
 
 
 def children_of_type(node, types: Union[str, Tuple]):
@@ -295,8 +293,7 @@ class LanguageParser(ABC):
         if parser:
             self.parser = parser
         else:
-            self.parser = Parser()
-            self.parser.set_language(get_language(LanguageId(self.get_lang())))
+            self.parser = Parser(get_language(LanguageId(self.get_lang())))
         if file_contents:
             self.update(file_contents)
             if remove_comments:  # must have file_contents to strip
