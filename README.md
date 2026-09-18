@@ -146,130 +146,123 @@ for code in code_strings:
 Only use `new_hash=False` when the most recent query was for the same code
 string. Otherwise, use `add(code)` to compute fresh fingerprints.
 
-### Data Schema
+### Data schema
 
-This is a description of the JSON schema into which `source_parser` will
-transform source code files, for use in method and class-level code-natural
-language modeling. The data will consist of JSON lines, that is valid JSON
-separated by newline characters. Each line of JSON will be the features
-extracted from a single source code file. The proposed JSON schema for each
-individual file is as follows:
+`source_parser` emits one JSON object per source file. `repo_parse` writes
+these objects as [JSON Lines](https://jsonlines.org/) (one object per line),
+optionally compressed with LZ4 or gzip.
 
-_NOTE: See individual language parsers in `source_parser/parsers` for the langauge-specific method and class attributes._
+There are two layers to the output:
+
+1. Every language parser returns the common file-level fields described below.
+2. `repo_parse` adds repository and source-file metadata. `repo_scrape` emits
+   only this metadata and the original source; it does not add parsed methods or
+   classes.
+
+The project emits a family of language-specific schemas rather than one strict
+cross-language JSON Schema. Method, class, and `attributes` fields reflect the
+constructs available in each language. Consumers should rely on the common
+file-level fields and treat declaration-specific fields as language-dependent.
+
+#### Example `repo_parse` record
+
+This abbreviated record shows the serialized JSON shape for a Python file.
+Positions are zero-based, byte spans are end-exclusive, and Python tuples are
+serialized as JSON arrays.
 
 ```json
 {
-	'file_name': 'name_of_file.extension',
-
-    'file_hash': 'hash of file for literal deduplication',
-
-	'relative_path': 'repo_top_level/path/to/file/name_of_file.extension',
-
-	'repo_name': 'owner/repo-name',
-
-    'commit-hash': 'hash of the commit being analyzed',
-
-	'license': {
-        'label': 'label provided by github API or in json list',
-        'files': [
-            'relative_path': 'path/to/license/file',
-            'file_contents': 'license file contents',
-        ],
-    }
-
-    'original_string': 'origina string of file',
-
-	'file_docstring': 'string containing first docstring for all of file',
-
-	'contexts': [
-            'import statement 1',
-            'import statement 2',
-            'global variable expression 1',
-            ...
-        ],
-
-	'language_version_details': [
-        'e.g. python2 syntax detected', 'another languages idiosyncracies'
-        ]
-
-	'methods': [  # list of dictionaries annotating each method
-		{
-            'original_string': 'verbatim code of whole method',
-
-            'byte_span': (start_byte, end_byte),
-
-            'start_point': (start_line_number, start_column),
-
-            'end_point': (end_line_number, end_column),
-
-            'signature': 'string corresponding to definition, name, arguments of method',
-
-            'name': 'name of method',
-
-            'docstring': 'verbatim docstring corresponding to this method',
-
-            'body': 'verbatim code body',
-
-            'original_string_normed': 'code of whole method with string-literal, numeral normalization',
-
-            'signature_normed': 'signature with string-literals/numerals normalized',
-
-            'body_normed': 'code of body with string-literals/numerals normalized',
-
-            'default_arguments': ['arg1': 'default value 1', ...],
-
-            'syntax_pass': 'True/False whether the method is syntactically correct',
-
-            'attributes': [
-            	'language_specific_keys': 'language_specific_values',
-                'decorators': ['@wrap', '@abstractmethod'],
-                ...
-            ],
-            ...
-        },
-        ...
-	]
-
-	'classes': [
+  "url": "https://github.com/example/project",
+  "repo_name": "example/project",
+  "commit_hash": "0123456789abcdef0123456789abcdef01234567",
+  "relative_path": "src/greeting.py",
+  "original_string": "import math\n\nclass Greeter:\n    def greet(self, name=\"world\"):\n        return f\"Hello, {name}!\"\n",
+  "file_hash": "e4a1c4c66a1da64278933d0a2529e0dde46594d76fdeacca3de409f1eaf3aef7",
+  "file_docstring": "",
+  "contexts": [
+    "import math"
+  ],
+  "methods": [],
+  "classes": [
+    {
+      "name": "Greeter",
+      "definition": "class Greeter:",
+      "class_docstring": "",
+      "original_string": "class Greeter:\n    def greet(self, name=\"world\"):\n        return f\"Hello, {name}!\"",
+      "byte_span": [13, 95],
+      "start_point": [2, 0],
+      "end_point": [4, 32],
+      "attributes": {},
+      "methods": [
         {
-		'original_string': 'verbatim code of class',
-
-        'byte_span': (start_byte, end_byte),
-
-        'start_point': (start_line_number, start_column),
-
-        'end_point': (end_line_number, end_column),
-
-        'name': 'class name',
-
-        'definition': 'class definition statement',
-
-		'class_docstring': 'docstring corresponding to to-level class definition,
-
-		'attributes': {  # language specific keys and values, e.g.
-                'expression_statements': [
-                    {
-                      'expression': 'attribute = 1',
-                      'comment': 'comment associated'
-                    },
-                'classes': [  # classes defined within classes
-                    {
-                        # same structure as classes
-                    }
-                ]
-                ...
-                ]
-		    },
-
-		'methods': [
-            '# list of class methods of the same form as top-level methods',
-            ...
-            ]
-	    }
-    ...
+          "name": "greet",
+          "signature": "    def greet(self, name=\"world\"):",
+          "docstring": "",
+          "body": "        return f\"Hello, {name}!\"",
+          "original_string": "    def greet(self, name=\"world\"):\n        return f\"Hello, {name}!\"",
+          "byte_span": [32, 95],
+          "start_point": [3, 4],
+          "end_point": [4, 32],
+          "default_arguments": {
+            "name": "\"world\""
+          },
+          "syntax_pass": true,
+          "attributes": {}
+        }
+      ]
+    }
+  ],
+  "license": {
+    "label": "MIT",
+    "files": [
+      {
+        "relative_path": "LICENSE",
+        "file_contents": ""
+      }
     ]
-]
+  }
+}
 ```
+
+#### File-level fields
+
+| Field | Produced by | Type | Description |
+| --- | --- | --- | --- |
+| `file_hash` | parser, `repo_parse`, `repo_scrape` | string | Deterministic SHA-256 identifier derived from the source contents. |
+| `file_docstring` | parser, `repo_parse` | string | Leading file comment or docstring, if recognized by the language parser. |
+| `contexts` | parser, `repo_parse` | array of strings | File-level imports, assignments, or analogous language context. |
+| `methods` | parser, `repo_parse` | array of objects | Top-level callable declarations recognized by the language parser. |
+| `classes` | parser, `repo_parse` | array of objects | Top-level classes or analogous type declarations. |
+| `original_string` | `repo_parse`, `repo_scrape` | string | Full source text, after any parser preprocessing. |
+| `relative_path` | `repo_parse`, `repo_scrape` | string | File path relative to the repository root. |
+| `url` | `repo_parse`, `repo_scrape` | string | Repository URL from the input task. |
+| `repo_name` | `repo_parse`, `repo_scrape` | string | Repository owner and name derived from `url`. |
+| `commit_hash` | `repo_parse`, `repo_scrape` | string | Commit parsed by the crawler. |
+| `license` | `repo_parse`, `repo_scrape` | object | Input license label and discovered license-file paths. `file_contents` is currently empty. |
+
+#### Declaration fields
+
+Method and class objects commonly use the following fields, but availability
+and exact meaning vary by language:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `name` | string | Declaration name. |
+| `original_string` | string | Source text covered by the declaration. |
+| `byte_span` | two-integer array | UTF-8 byte offsets `[start, end)`. |
+| `start_point` / `end_point` | two-integer array | Zero-based `[line, column]` Tree-sitter positions. |
+| `signature` | string | Callable declaration without its body. |
+| `definition` | string | Class/type declaration without its body. |
+| `docstring` / `class_docstring` | string | Associated documentation when recognized. Some parsers use `docstring` for classes. |
+| `body` | string | Declaration body when the parser exposes it. |
+| `default_arguments` | object | Mapping from parameter source text to default-value source text. |
+| `syntax_pass` | boolean | Whether Tree-sitter reports the declaration as syntactically valid. |
+| `methods` / `classes` | array of objects | Nested declarations where supported. |
+| `attributes` | object | Language-specific metadata such as decorators, modifiers, return types, fields, properties, bases, namespaces, or nested classes. |
+
+For exact language-specific keys, see the parser implementations in
+[`source_parser/parsers`](source_parser/parsers) and their corresponding tests
+in [`test/source_parser/parsers`](test/source_parser/parsers).
 
 ## Contributing
 
