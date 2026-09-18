@@ -22,7 +22,7 @@ To contribute, branch source-parser and file a [pull request](https://github.com
   - Install an editable development build (this compiles the pinned grammars):
       ```bash
             python -m pip install --upgrade pip
-            python -m pip install build pylint pytest
+            python -m pip install build pylint pytest "setuptools>=77"
             python -m pip install -e .
       ```
   - Execute `python -m pytest test/` in the root directory and ensure all tests pass.
@@ -71,9 +71,13 @@ You may disable linting rules for specific lines/files in cases where the lintin
 You may also run linting at the repo root directory (which are the same commands in PR validation):
 
 ```
-pip install pylint
+python -m pip install pylint "setuptools>=77"
 pylint source_parser test/source_parser setup.py --recursive=y
 ```
+
+Setuptools must be installed in the lint environment so pylint can import it
+from `setup.py`. Dependencies installed by an isolated package build are not
+available to the linter.
 
 ## Reporting Issues
 
