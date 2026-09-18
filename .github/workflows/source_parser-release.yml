@@ -9,6 +9,8 @@ permissions:
 jobs:
   source-distribution:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
@@ -16,6 +18,11 @@ jobs:
     - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: "3.11"
+    - name: Read package version
+      id: version
+      run: |
+        version=$(python -c "import runpy; print(runpy.run_path('source_parser/_version.py')['__version__'])")
+        echo "version=$version" >> "$GITHUB_OUTPUT"
     - run: python -m pip install build
     - run: python -m build --sdist
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -56,3 +63,35 @@ jobs:
         path: dist
     - name: Publish release distributions to PyPI
       uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+
+  github-release:
+    needs: [source-distribution, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      with:
+        pattern: release-*
+        merge-multiple: true
+        path: dist
+    - name: Create GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        RELEASE_VERSION: ${{ needs.source-distribution.outputs.version }}
+        RELEASE_COMMIT: ${{ github.sha }}
+      run: |
+        tag="v${RELEASE_VERSION}"
+        tag_refs=$(gh api "repos/${GH_REPO}/git/matching-refs/tags/${tag}" --jq '.[].ref')
+        if grep -Fxq "refs/tags/${tag}" <<< "$tag_refs"; then
+          tag_commit=$(gh api "repos/${GH_REPO}/commits/refs/tags/${tag}" --jq .sha)
+          if [[ "$tag_commit" != "$RELEASE_COMMIT" ]]; then
+            echo "::error::Tag ${tag} points to ${tag_commit}, not ${RELEASE_COMMIT}."
+            exit 1
+          fi
+        fi
+        gh release create "$tag" dist/* \
+          --target "$RELEASE_COMMIT" \
+          --title "source-parser ${RELEASE_VERSION}" \
+          --generate-notes

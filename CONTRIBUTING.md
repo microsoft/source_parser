@@ -40,6 +40,24 @@ To contribute, branch source-parser and file a [pull request](https://github.com
      break backwards compatibility and be sure to update the README.md
      description of the schema.
 
+### Publishing a release
+
+Update `source_parser/_version.py` to a new version and merge the change before
+manually running **Release and Publish pipeline** from GitHub Actions on the
+ref to release. The workflow builds the distributions, publishes them to PyPI,
+then creates a GitHub Release named `source-parser <version>` with a
+`v<version>` tag at the exact workflow commit. The GitHub Release includes
+generated release notes and the same wheels and source archive published to PyPI.
+
+Only the GitHub Release job has `contents: write`; PyPI publication continues to
+use trusted publishing with `id-token: write`. Existing tags must point to the
+workflow commit. The workflow never moves tags or overwrites existing releases.
+
+If GitHub Release creation fails after PyPI publication succeeds, use
+**Re-run failed jobs** rather than rerunning the successful PyPI job. If a
+partially created release draft already exists, finish that draft instead of
+rerunning release creation.
+
 ### Adding new language support
 
 Examine the parsers in the `source_parser/parsers` directory
