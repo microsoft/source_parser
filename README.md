@@ -73,6 +73,10 @@ Two CLI tools are added upon installation:
  - `repo_parse -h`: semantically parses code using `source_parser`
  - `repo_scrape -h`: just grabs all files matching some patterns
 
+Both commands start a CPU-only Ray runtime (`num_gpus=0`). This avoids GPU
+device-name detection, which can fail on some NVIDIA/WSL setups. An already
+initialized Ray runtime is reused unchanged.
+
 for example:
 
 ```bash

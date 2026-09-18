@@ -374,6 +374,7 @@ class CrawlCrawler:
             ray.init(
                 object_store_memory=kwargs["object_store_memory"],
                 num_cpus=num_cpus or psutil.cpu_count(),
+                num_gpus=0,  # CPU-only parsing does not need GPU device-name detection.
             )
 
         dispatch = PipelineDispatch(self.observers, tasks, notify, **kwargs)
