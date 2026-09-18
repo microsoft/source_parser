@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 
 from source_parser.parsers.java_parser import JavaParser
+from source_parser.parsers.language_parser import has_correct_syntax
 
 
 def test_syntax_fail():
@@ -29,6 +30,20 @@ def test_syntax_pass():
 
     # print(class_dict_list)
     assert class_dict_list[0]['syntax_pass'] is True
+
+
+def test_missing_node_is_incorrect_syntax():
+    parser = JavaParser("class Dummy { public void test ( { } }")
+    nodes = [parser.tree.root_node]
+    missing = []
+    while nodes:
+        node = nodes.pop()
+        if node.is_missing:
+            missing.append(node)
+        nodes.extend(node.children)
+
+    assert missing
+    assert all(not has_correct_syntax(node) for node in missing)
 
 
 if __name__ == "__main__":

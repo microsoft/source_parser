@@ -76,7 +76,7 @@ Usage example of CodeDeduper:
 >>>     deduper.add(d)
 >>> for d in test_data:
 >>>     if deduper.query(d) is False:
->>>         deduper.add(d)
+>>>         deduper.add(d, new_hash=False)
 >>>         deduped.append(d)
 >>> print(deduped)
 ['def g():\n x=1\n y=2\n return x+y+10']
@@ -214,8 +214,7 @@ class CodeDeduper:
         self.lsh_mset = MinHashLSH(
             threshold=threshold_mset, num_perm=num_perm, weights=weights
         )
-        self.parser = Parser()
-        self.parser.set_language(get_language(language.lower()))
+        self.parser = Parser(get_language(language.lower()))
         self.literals = [
             item
             for sublist in lang2lits[LanguageId[language.upper()]]
@@ -227,39 +226,34 @@ class CodeDeduper:
 
     def add(self, d, new_hash=True):
         """
-        Add a single example or a list of examples.
+        Add a single code string to the reference set.
 
         Parameters
         ---------
         new_hash: True/False
-            Should this datapoint by minhashed from scratch?
-            Set to False if the datapoint was
-            already queried.
+            Should this datapoint be minhashed from scratch?
+            Set to False only immediately after querying the same datapoint
+            to reuse its fingerprints without parsing or hashing it again.
         """
-        tokens = self._process_data(d)
-        tokens_mset = [t + str(Counter(tokens)[t]) for t in tokens]
         if new_hash:
-            self.m_set.clear()
-            self.m_mset.clear()
-            for t in tokens:
-                self.m_set.update(t.encode("utf8"))
-            for t in tokens_mset:
-                self.m_mset.update(t.encode("utf8"))
+            self._update_hashes(d)
         self.lsh_set.insert(self._idx, self.m_set)
         self.lsh_mset.insert(self._idx, self.m_mset)
         self._idx += 1
 
     def query(self, d):
         """Check if an example is a duplicate."""
-        tokens = self._process_data(d)
-        tokens_mset = [t + str(Counter(tokens)[t]) for t in tokens]
+        self._update_hashes(d)
+        return len(set(self.lsh_set.query(self.m_set)) & set(self.lsh_mset.query(self.m_mset))) > 0
+
+    def _update_hashes(self, d):
+        """Compute both fingerprints with one update per distinct token."""
+        token_counts = Counter(self._process_data(d))
         self.m_set.clear()
         self.m_mset.clear()
-        for t in tokens:
-            self.m_set.update(t.encode("utf8"))
-        for t in tokens_mset:
-            self.m_mset.update(t.encode("utf8"))
-        return len(set(self.lsh_set.query(self.m_set)) & set(self.lsh_mset.query(self.m_mset))) > 0
+        for token, count in token_counts.items():
+            self.m_set.update(token.encode("utf8"))
+            self.m_mset.update((token + str(count)).encode("utf8"))
 
     def _process_data(self, d):
         """Tokenize code string and return only identifiers and literals."""

@@ -20,6 +20,28 @@ description of the structural annotated schema.
 
 __NOTE__: this tool is only supported on a **NIX-style OS (Linux, MacOS, FreeBSD, etc)**
 
+Source Parser 2.x supports **Python 3.11-3.14** and **Tree-sitter 0.26.x**
+(`tree-sitter>=0.26,<0.27`). Python 3.10 and older and the legacy Tree-sitter
+bindings are no longer supported.
+
+Grammar snapshots are pinned in the repository and compiled into native
+bindings when the package is built. Installing a compatible wheel requires no
+C/C++ compiler or writable Tree-sitter grammar cache. Building from a source distribution
+requires a C/C++ toolchain and Python development headers; see
+[CONTRIBUTING.md](CONTRIBUTING.md) for checkout builds.
+
+### Migrating from 1.x
+
+The parser schema and pinned grammar snapshots are retained. Supported Python
+**runtime** versions do not imply that every new Python syntax feature is
+recognized by the pinned Python grammar. Python 2 source conversion remains
+available through Fissix instead of the removed standard-library `lib2to3`.
+
+`get_language("python")` and `get_language(LanguageId.PYTHON)` continue to work.
+Runtime `build_library()` and the `force_build` argument to `get_language()`
+have been removed; rebuild/reinstall the package after changing a grammar.
+Custom Tree-sitter parsers should use `Parser(get_language("python"))` or assign
+`parser.language`, rather than calling the removed `parser.set_language()`.
 
 ### PyPI installation
 
@@ -97,6 +119,28 @@ If you'd like to load it all into memory at once:
 from source_parser import load_zip_json
 all_data = list(load_zip_json('file_saved_from_repocontext.lz4'))
 ```
+
+### Deduplicating code
+
+`CodeDeduper` detects near-duplicate code using fingerprints of identifiers and
+literals. The package uses `datasketch` 1.x to preserve compatibility with
+existing fingerprints and duplicate-detection behavior. When adding a code
+string immediately after querying it, use `new_hash=False` to reuse those
+fingerprints without parsing and hashing the same code again:
+
+```python
+from source_parser.deduper import CodeDeduper
+
+deduper = CodeDeduper(language="python")
+unique_code = []
+for code in code_strings:
+    if not deduper.query(code):
+        deduper.add(code, new_hash=False)
+        unique_code.append(code)
+```
+
+Only use `new_hash=False` when the most recent query was for the same code
+string. Otherwise, use `add(code)` to compute fresh fingerprints.
 
 ### Data Schema
 
@@ -234,4 +278,3 @@ trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
-

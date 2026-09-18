@@ -1,26 +1,23 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-# pylint: disable=deprecated-module
 """
 This is a set of tools for processing python source code within a python script
 """
 
 import ast
-import lib2to3
-import lib2to3.fixes
-import lib2to3.refactor
 import warnings
 import autopep8
+from fissix import refactor
 
 from source_parser.utils import time_limit
 
 
 _ALL_FIXES = [
-    f"lib2to3.fixes.fix_{l}"
-    for l in lib2to3.refactor.get_all_fix_names("lib2to3.fixes")
+    f"fissix.fixes.fix_{l}"
+    for l in refactor.get_all_fix_names("fissix.fixes")
 ]
-_TOOL = lib2to3.refactor.RefactoringTool(_ALL_FIXES)
+_TOOL = refactor.RefactoringTool(_ALL_FIXES)
 
 
 def fix2to3(source_string):

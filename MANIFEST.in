@@ -1,3 +1,5 @@
-graft source_parser
-global-exclude *.py[cod] __pycache__ *.so
-exclude source_parser/tree_sitter/assets/*
+include source_parser/languages.yml
+include source_parser/tree_sitter/grammars.json
+include source_parser/tree_sitter/binding.c
+recursive-include source_parser/tree_sitter/assets *.c *.cc *.h LICENSE*
+global-exclude *.py[cod] __pycache__ *.so *.pyd

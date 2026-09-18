@@ -171,7 +171,7 @@ def file_tokenizer(code: str, lang: LanguageId) -> List[str]:
         tokenized code
     """
     try:
-        PARSER.set_language(get_language(lang))
+        PARSER.language = get_language(lang)
         tree = PARSER.parse(bytes(code, "utf8"))
         root = tree.root_node
         tokens = []
@@ -266,8 +266,6 @@ def _file_tokenizer(
 
 class LiteralCount():
 
-    PARSER = Parser()
-
     def __init__(
         self, lang: LanguageId, token_limit: int = 50000, load_file: str = None
     ):
@@ -288,6 +286,7 @@ class LiteralCount():
 
         """
         self.lang = lang
+        self.parser = Parser(get_language(lang))
         self.token_limit = token_limit
         if load_file is not None:
             self.load_from_file(load_file)
@@ -398,7 +397,7 @@ class LiteralCount():
             r"(?<=\")(.*)(?=\")",
         ]
         try:
-            tree = LiteralCount.PARSER.parse(bytes(code, "utf8"))
+            tree = self.parser.parse(bytes(code, "utf8"))
             root = tree.root_node
             tokens = []
             types = []
@@ -512,7 +511,7 @@ def normalize(
     norm_code (`str`):
         normalized code
     """
-    PARSER.set_language(get_language(lang))
+    PARSER.language = get_language(lang)
     if lits is None:
         lits = {}
     for name in ["num", "str", "char", "regex"]:

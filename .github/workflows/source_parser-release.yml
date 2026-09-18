@@ -3,38 +3,56 @@ name: Release and Publish pipeline
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  release-build:
+  source-distribution:
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        submodules: recursive
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: "3.11"
+    - run: python -m pip install build
+    - run: python -m build --sdist
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: release-sdist
+        path: dist/*.tar.gz
+
+  wheels:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
-    permissions:
-        contents: 'read'
-        id-token: write
-
+        os: [ubuntu-latest, macos-latest]
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install wheel twine
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi    
-    - name: Get tree-sitter submodule
-      run: |
-        git submodule update --init --recursive
-    - name: Build and deploy package
-      run: |
-        python setup.py bdist_wheel
-    - name: Upload artifacts
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        submodules: recursive
+    - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
-        name: release-dists
-        path: dist/*
+        python-version: "3.11"
+    - run: python -m pip install "cibuildwheel>=3,<4"
+    - run: python -m cibuildwheel --output-dir dist
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: release-wheels-${{ matrix.os }}
+        path: dist/*.whl
+
+  publish:
+    needs: [source-distribution, wheels]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      with:
+        pattern: release-*
+        merge-multiple: true
+        path: dist
     - name: Publish release distributions to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
